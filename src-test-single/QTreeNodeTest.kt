@@ -45,6 +45,7 @@ import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.name
 import kotlin.io.path.reader
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -2439,7 +2440,7 @@ private fun qBrackets(vararg keysAndValues: Any?): String {
 }
 
 // CallChain[size=10] = QOut <-[Ref]- QLogStyle <-[Ref]- QLogStyle.SRC_AND_STACK <-[Call]- QExceptio ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-interface QOut {
+private interface QOut {
     // CallChain[size=12] = QOut.isAcceptColoredText <-[Propag]- QOut.CONSOLE <-[Call]- QMyLog.out <-[Ca ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     val isAcceptColoredText: Boolean
 
@@ -2761,10 +2762,10 @@ private fun String.qReplaceFirstIfNonEmptyStringGroup(@Language("RegExp") regex:
     }
 }
 
-// CallChain[size=7] = qBG_JUMP <-[Call]- QShColor.bg <-[Call]- String.qColorLine() <-[Call]- String ... [Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=6] = qBG_JUMP <-[Call]- QShColor.bg <-[Propag]- QShColor.LIGHT_GREEN <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private const val qBG_JUMP = 10
 
-// CallChain[size=5] = qSTART <-[Call]- String.qColor() <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=6] = qSTART <-[Call]- QShColor.bg <-[Propag]- QShColor.LIGHT_GREEN <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private const val qSTART = "\u001B["
 
 // CallChain[size=6] = qEND <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -2884,16 +2885,20 @@ enum class QShColor(val code: Int) {
     // CallChain[size=5] = QShColor.WHITE <-[Propag]- QShColor.LIGHT_GREEN <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     WHITE(97);
 
-    // CallChain[size=6] = QShColor.fg <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=5] = QShColor.fg <-[Propag]- QShColor.LIGHT_GREEN <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     /** ANSI modifier string to apply the color to the text itself */
     val fg: String = "$qSTART${code}m"
 
-    // CallChain[size=6] = QShColor.bg <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=5] = QShColor.bg <-[Propag]- QShColor.LIGHT_GREEN <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     /** ANSI modifier string to apply the color the text's background */
     val bg: String = "$qSTART${code + qBG_JUMP}m"
 
     companion object {
-        
+        // CallChain[size=5] = QShColor.random() <-[Propag]- QShColor.LIGHT_GREEN <-[Call]- light_green <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+        fun random(seed: String, colors: Array<QShColor> = arrayOf(YELLOW, GREEN, BLUE, MAGENTA, CYAN)): QShColor {
+            val idx = seed.hashCode().rem(colors.size).absoluteValue
+            return colors[idx]
+        }
     }
 }
 

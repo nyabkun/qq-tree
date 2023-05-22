@@ -110,6 +110,7 @@ Refer to [build.gradle.kts](build.gradle.kts) to directly check project settings
 ```kotlin
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
 }
 ```
 
@@ -125,7 +126,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.nyabkun:qq-tree:v2023-05-21'
+    implementation 'com.github.nyabkun:qq-tree:v2023-05-22-bc02'
 }
 ```
 
@@ -137,7 +138,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.nyabkun:qq-tree:v2023-05-21")
+    implementation("com.github.nyabkun:qq-tree:v2023-05-22-bc02")
 }
 ```
 
@@ -156,7 +157,7 @@ dependencies {
     <dependency>
         <groupId>com.github.nyabkun</groupId>
         <artifactId>qq-tree</artifactId>
-        <version>v2023-05-21</version>
+        <version>v2023-05-22-bc02</version>
     </dependency>
 </dependencies>
 ```

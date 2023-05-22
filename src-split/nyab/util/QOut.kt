@@ -17,7 +17,7 @@ import java.nio.file.Path
 // This is a split-file version of the library, this file is not self-contained.
 
 // CallChain[size=8] = QOut <-[Ref]- QLogStyle <-[Ref]- QLogStyle.SRC_AND_STACK <-[Call]- QException ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-interface QOut {
+internal interface QOut {
     // CallChain[size=10] = QOut.isAcceptColoredText <-[Propag]- QOut.CONSOLE <-[Call]- QMyLog.out <-[Ca ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     val isAcceptColoredText: Boolean
 

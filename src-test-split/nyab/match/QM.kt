@@ -13,6 +13,50 @@ package nyab.match
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
+// CallChain[size=14] = String.qMatches() <-[Call]- Path.qFind() <-[Call]- Collection<Path>.qFind()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal fun String.qMatches(matcher: QM): Boolean = matcher.matches(this)
+
+// CallChain[size=5] = not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
+private val QM.not: QM
+    get() = QMatchNot(this)
+
+// CallChain[size=6] = QMatchNot <-[Call]- not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
+private class QMatchNot(val matcher: QM) : QM {
+    // CallChain[size=7] = QMatchNot.matches() <-[Propag]- QMatchNot <-[Call]- not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(text: String): Boolean = !matcher.matches(text)
+
+    // CallChain[size=7] = QMatchNot.toString() <-[Propag]- QMatchNot <-[Call]- not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun toString(): String {
+        return this::class.simpleName.toString() + "(matcher=$matcher)"
+    }
+}
+
+// CallChain[size=14] = QMatchAny <-[Call]- QM.isAny() <-[Propag]- QM.exact() <-[Call]- qSrcFileAtFr ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal object QMatchAny : QM {
+    // CallChain[size=15] = QMatchAny.matches() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]- Q ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    override fun matches(text: String): Boolean {
+        return true
+    }
+
+    // CallChain[size=15] = QMatchAny.toString() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]-  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    override fun toString(): String {
+        return this::class.simpleName.toString()
+    }
+}
+
+// CallChain[size=14] = QMatchNone <-[Call]- QM.isNone() <-[Propag]- QM.exact() <-[Call]- qSrcFileAt ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal object QMatchNone : QM {
+    // CallChain[size=15] = QMatchNone.matches() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag] ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    override fun matches(text: String): Boolean {
+        return false
+    }
+
+    // CallChain[size=15] = QMatchNone.toString() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    override fun toString(): String {
+        return this::class.simpleName.toString()
+    }
+}
+
 // CallChain[size=13] = QM <-[Ref]- QM.exact() <-[Call]- qSrcFileAtFrame() <-[Call]- qSrcFileLinesAt ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal interface QM {
     // CallChain[size=13] = QM.matches() <-[Propag]- QM.exact() <-[Call]- qSrcFileAtFrame() <-[Call]- qS ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -51,35 +95,6 @@ private class QExactMatch(val textExact: String, val ignoreCase: Boolean = false
     }
 }
 
-// CallChain[size=14] = QMatchNone <-[Call]- QM.isNone() <-[Propag]- QM.exact() <-[Call]- qSrcFileAt ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal object QMatchNone : QM {
-    // CallChain[size=15] = QMatchNone.matches() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag] ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-    override fun matches(text: String): Boolean {
-        return false
-    }
-
-    // CallChain[size=15] = QMatchNone.toString() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-    override fun toString(): String {
-        return this::class.simpleName.toString()
-    }
-}
-
-// CallChain[size=14] = QMatchAny <-[Call]- QM.isAny() <-[Propag]- QM.exact() <-[Call]- qSrcFileAtFr ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal object QMatchAny : QM {
-    // CallChain[size=15] = QMatchAny.matches() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]- Q ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-    override fun matches(text: String): Boolean {
-        return true
-    }
-
-    // CallChain[size=15] = QMatchAny.toString() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]-  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-    override fun toString(): String {
-        return this::class.simpleName.toString()
-    }
-}
-
-// CallChain[size=14] = String.qMatches() <-[Call]- Path.qFind() <-[Call]- Collection<Path>.qFind()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal fun String.qMatches(matcher: QM): Boolean = matcher.matches(this)
-
 // CallChain[size=11] = QStartsWithMatch <-[Call]- QM.startsWith() <-[Call]- QMyPath.src_root <-[Cal ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private class QStartsWithMatch(val textStartsWith: String, val ignoreCase: Boolean = false) : QM {
     // CallChain[size=12] = QStartsWithMatch.matches() <-[Propag]- QStartsWithMatch <-[Call]- QM.startsW ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -90,20 +105,5 @@ private class QStartsWithMatch(val textStartsWith: String, val ignoreCase: Boole
     // CallChain[size=12] = QStartsWithMatch.toString() <-[Propag]- QStartsWithMatch <-[Call]- QM.starts ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     override fun toString(): String {
         return this::class.simpleName + "(textStartsWith=$textStartsWith, ignoreCase=$ignoreCase)"
-    }
-}
-
-// CallChain[size=5] = not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
-private val QM.not: QM
-    get() = QMatchNot(this)
-
-// CallChain[size=6] = QMatchNot <-[Call]- not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
-private class QMatchNot(val matcher: QM) : QM {
-    // CallChain[size=7] = QMatchNot.matches() <-[Propag]- QMatchNot <-[Call]- not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(text: String): Boolean = !matcher.matches(text)
-
-    // CallChain[size=7] = QMatchNot.toString() <-[Propag]- QMatchNot <-[Call]- not <-[Call]- QM.notExact() <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun toString(): String {
-        return this::class.simpleName.toString() + "(matcher=$matcher)"
     }
 }

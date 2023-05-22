@@ -18,6 +18,24 @@ import kotlin.math.abs
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
+// CallChain[size=7] = QUnit <-[Ref]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal enum class QUnit {
+    // CallChain[size=7] = QUnit.Nano <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Nano,
+    // CallChain[size=7] = QUnit.Micro <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Micro,
+    // CallChain[size=7] = QUnit.Milli <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Milli,
+    // CallChain[size=7] = QUnit.Second <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Second,
+    // CallChain[size=7] = QUnit.Minute <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Minute,
+    // CallChain[size=7] = QUnit.Hour <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Hour,
+    // CallChain[size=7] = QUnit.Day <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    Day
+}
+
 // CallChain[size=6] = Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
 internal fun Long.qFormatDuration(unit: QUnit = QUnit.Nano): String {
     return when (unit) {
@@ -38,22 +56,14 @@ internal fun Long.qFormatDuration(unit: QUnit = QUnit.Nano): String {
     }
 }
 
-// CallChain[size=7] = QUnit <-[Ref]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal enum class QUnit {
-    // CallChain[size=7] = QUnit.Nano <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Nano,
-    // CallChain[size=7] = QUnit.Micro <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Micro,
-    // CallChain[size=7] = QUnit.Milli <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Milli,
-    // CallChain[size=7] = QUnit.Second <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Second,
-    // CallChain[size=7] = QUnit.Minute <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Minute,
-    // CallChain[size=7] = QUnit.Hour <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Hour,
-    // CallChain[size=7] = QUnit.Day <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    Day
+// CallChain[size=8] = Duration.qToMicrosOnlyPart() <-[Call]- Duration.qFormat() <-[Call]- Long.qFor ...  <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun Duration.qToMicrosOnlyPart(): Int {
+    return (toNanosPart() % 1_000_000) / 1_000
+}
+
+// CallChain[size=8] = Duration.qToNanoOnlyPart() <-[Call]- Duration.qFormat() <-[Call]- Long.qForma ...  <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun Duration.qToNanoOnlyPart(): Int {
+    return toNanosPart() % 1_000
 }
 
 // CallChain[size=7] = Duration.qFormat() <-[Call]- Long.qFormatDuration() <-[Call]- QTestResult.str <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
@@ -131,14 +141,4 @@ internal fun Duration.qFormat(detail: Boolean = false): String {
     }
 
     return parts.joinToString(" ")
-}
-
-// CallChain[size=8] = Duration.qToMicrosOnlyPart() <-[Call]- Duration.qFormat() <-[Call]- Long.qFor ...  <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun Duration.qToMicrosOnlyPart(): Int {
-    return (toNanosPart() % 1_000_000) / 1_000
-}
-
-// CallChain[size=8] = Duration.qToNanoOnlyPart() <-[Call]- Duration.qFormat() <-[Call]- Long.qForma ...  <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun Duration.qToNanoOnlyPart(): Int {
-    return toNanosPart() % 1_000
 }

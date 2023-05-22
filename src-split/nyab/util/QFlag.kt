@@ -50,6 +50,15 @@ internal sealed interface QFlag<T> where T : QFlag<T>, T : Enum<T> {
     }
 }
 
+// CallChain[size=12] = QFlagEnum <-[Ref]- QOpenOpt <-[Ref]- Path.qReader() <-[Call]- Path.qFetchLin ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal interface QFlagEnum<T> : QFlag<T> where T : QFlag<T>, T : Enum<T> {
+    // CallChain[size=13] = QFlagEnum.bits <-[Propag]- QFlagEnum <-[Ref]- QOpenOpt <-[Ref]- Path.qReader ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    override val bits: Int
+        get() = 1 shl (this as T).ordinal
+    // CallChain[size=13] = QFlagEnum.toEnumValues() <-[Propag]- QFlagEnum <-[Ref]- QOpenOpt <-[Ref]- Pa ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    override fun toEnumValues(): List<T> = listOf(this) as List<T>
+}
+
 // CallChain[size=12] = QFlagSet <-[Call]- QFlag.none() <-[Call]- Path.qReader() <-[Call]- Path.qFet ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 /**
  * Mutable bit flag
@@ -61,13 +70,4 @@ internal class QFlagSet<T>(val enumClass: KClass<T>, override var bits: Int) : Q
     // CallChain[size=13] = QFlagSet.toEnumValues() <-[Propag]- QFlagSet <-[Call]- QFlag.none() <-[Call] ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     override fun toEnumValues(): List<T> =
         enumValues.filter { contains(it) }
-}
-
-// CallChain[size=12] = QFlagEnum <-[Ref]- QOpenOpt <-[Ref]- Path.qReader() <-[Call]- Path.qFetchLin ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal interface QFlagEnum<T> : QFlag<T> where T : QFlag<T>, T : Enum<T> {
-    // CallChain[size=13] = QFlagEnum.bits <-[Propag]- QFlagEnum <-[Ref]- QOpenOpt <-[Ref]- Path.qReader ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    override val bits: Int
-        get() = 1 shl (this as T).ordinal
-    // CallChain[size=13] = QFlagEnum.toEnumValues() <-[Propag]- QFlagEnum <-[Ref]- QOpenOpt <-[Ref]- Pa ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    override fun toEnumValues(): List<T> = listOf(this) as List<T>
 }

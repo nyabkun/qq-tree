@@ -13,6 +13,35 @@ package nyab.match
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
+// CallChain[size=12] = String.qMatches() <-[Call]- Path.qFind() <-[Call]- Collection<Path>.qFind()  ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun String.qMatches(matcher: QM): Boolean = matcher.matches(this)
+
+// CallChain[size=12] = QMatchAny <-[Call]- QM.isAny() <-[Propag]- QM.exact() <-[Call]- qSrcFileAtFr ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal object QMatchAny : QM {
+    // CallChain[size=13] = QMatchAny.matches() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]- Q ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    override fun matches(text: String): Boolean {
+        return true
+    }
+
+    // CallChain[size=13] = QMatchAny.toString() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]-  ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    override fun toString(): String {
+        return this::class.simpleName.toString()
+    }
+}
+
+// CallChain[size=12] = QMatchNone <-[Call]- QM.isNone() <-[Propag]- QM.exact() <-[Call]- qSrcFileAt ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal object QMatchNone : QM {
+    // CallChain[size=13] = QMatchNone.matches() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag] ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    override fun matches(text: String): Boolean {
+        return false
+    }
+
+    // CallChain[size=13] = QMatchNone.toString() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    override fun toString(): String {
+        return this::class.simpleName.toString()
+    }
+}
+
 // CallChain[size=11] = QM <-[Ref]- QM.exact() <-[Call]- qSrcFileAtFrame() <-[Call]- qSrcFileLinesAt ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal interface QM {
     // CallChain[size=11] = QM.matches() <-[Propag]- QM.exact() <-[Call]- qSrcFileAtFrame() <-[Call]- qS ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -47,35 +76,6 @@ private class QExactMatch(val textExact: String, val ignoreCase: Boolean = false
         return this::class.simpleName + "(textExact=$textExact, ignoreCase=$ignoreCase)"
     }
 }
-
-// CallChain[size=12] = QMatchNone <-[Call]- QM.isNone() <-[Propag]- QM.exact() <-[Call]- qSrcFileAt ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal object QMatchNone : QM {
-    // CallChain[size=13] = QMatchNone.matches() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag] ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    override fun matches(text: String): Boolean {
-        return false
-    }
-
-    // CallChain[size=13] = QMatchNone.toString() <-[Propag]- QMatchNone <-[Call]- QM.isNone() <-[Propag ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    override fun toString(): String {
-        return this::class.simpleName.toString()
-    }
-}
-
-// CallChain[size=12] = QMatchAny <-[Call]- QM.isAny() <-[Propag]- QM.exact() <-[Call]- qSrcFileAtFr ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal object QMatchAny : QM {
-    // CallChain[size=13] = QMatchAny.matches() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]- Q ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    override fun matches(text: String): Boolean {
-        return true
-    }
-
-    // CallChain[size=13] = QMatchAny.toString() <-[Propag]- QMatchAny <-[Call]- QM.isAny() <-[Propag]-  ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    override fun toString(): String {
-        return this::class.simpleName.toString()
-    }
-}
-
-// CallChain[size=12] = String.qMatches() <-[Call]- Path.qFind() <-[Call]- Collection<Path>.qFind()  ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun String.qMatches(matcher: QM): Boolean = matcher.matches(this)
 
 // CallChain[size=9] = QStartsWithMatch <-[Call]- QM.startsWith() <-[Call]- QMyPath.src_root <-[Call ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private class QStartsWithMatch(val textStartsWith: String, val ignoreCase: Boolean = false) : QM {

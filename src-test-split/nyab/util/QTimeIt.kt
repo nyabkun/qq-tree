@@ -17,6 +17,14 @@ import kotlin.contracts.contract
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
+// CallChain[size=5] = QTimeItResult <-[Ref]- qTimeIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal class QTimeItResult<T>(val label: String, val time: Long, val result: T) {
+    // CallChain[size=5] = QTimeItResult.toString() <-[Call]- qTimeIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun toString(): String {
+        return qBrackets(label, time.qFormatDuration())
+    }
+}
+
 // CallChain[size=4] = qTimeIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
 @OptIn(ExperimentalContracts::class)
 internal inline fun <T> qTimeIt(label: String = qThisSrcLineSignature, quiet: Boolean = false, out: QOut? = QOut.CONSOLE, block: () -> T): QTimeItResult<T> {
@@ -36,12 +44,4 @@ internal inline fun <T> qTimeIt(label: String = qThisSrcLineSignature, quiet: Bo
         out?.println(result.toString())
 
     return result
-}
-
-// CallChain[size=5] = QTimeItResult <-[Ref]- qTimeIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal class QTimeItResult<T>(val label: String, val time: Long, val result: T) {
-    // CallChain[size=5] = QTimeItResult.toString() <-[Call]- qTimeIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun toString(): String {
-        return qBrackets(label, time.qFormatDuration())
-    }
 }

@@ -14,6 +14,7 @@ package nyab.util
 
 import java.io.PrintStream
 import java.nio.file.Path
+import java.util.*
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -35,6 +36,21 @@ internal fun QE.throwIt(msg: Any? = "", e: Throwable? = null, stackDepth: Int = 
         },
         e, stackDepth = stackDepth + 1
     )
+}
+
+// CallChain[size=11] = QE.throwItFile() <-[Call]- LineNumberReader.qFetchLinesAround() <-[Call]- Pa ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun QE.throwItFile(path: Path, e: Throwable? = null, stackDepth: Int = 0): Nothing {
+    throw QException(this, qBrackets("File", path.absolutePathString()), e, stackDepth = stackDepth + 1)
+}
+
+// CallChain[size=9] = QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- qMySrcLinesAtFrame() <-[ ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun QE.throwItBrackets(vararg keysAndValues: Any?, e: Throwable? = null, stackDepth: Int = 0): Nothing {
+    throw QException(this, qBrackets(*keysAndValues), e, stackDepth = stackDepth + 1)
+}
+
+// CallChain[size=9] = qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut() < ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun qUnreachable(msg: Any? = ""): Nothing {
+    QE.Unreachable.throwIt(msg)
 }
 
 // CallChain[size=3] = QException <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -88,21 +104,6 @@ internal class QException(
 //         used by @Test
 //        return type.name.yellow
     }
-}
-
-// CallChain[size=9] = qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut() < ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun qUnreachable(msg: Any? = ""): Nothing {
-    QE.Unreachable.throwIt(msg)
-}
-
-// CallChain[size=9] = QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- qMySrcLinesAtFrame() <-[ ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun QE.throwItBrackets(vararg keysAndValues: Any?, e: Throwable? = null, stackDepth: Int = 0): Nothing {
-    throw QException(this, qBrackets(*keysAndValues), e, stackDepth = stackDepth + 1)
-}
-
-// CallChain[size=11] = QE.throwItFile() <-[Call]- LineNumberReader.qFetchLinesAround() <-[Call]- Pa ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun QE.throwItFile(path: Path, e: Throwable? = null, stackDepth: Int = 0): Nothing {
-    throw QException(this, qBrackets("File", path.absolutePathString()), e, stackDepth = stackDepth + 1)
 }
 
 // CallChain[size=10] = T?.qaNotNull() <-[Call]- qSrcFileAtFrame() <-[Call]- qSrcFileLinesAtFrame()  ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]

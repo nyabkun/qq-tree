@@ -25,64 +25,6 @@ internal enum class QAlign {
     CENTER
 }
 
-// CallChain[size=7] = String.qAlignCenter() <-[Call]- String.qWithMinLength() <-[Call]- String.qWit ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun String.qAlignCenter(
-    vararg places: Regex = arrayOf("(.*)".re),
-    onlyFirstMatch: Boolean = true,
-    oddLengthTuning: QLR = if (qIsNumber()) QLR.RIGHT else QLR.LEFT,
-    groupIdx: QGroupIdx = QGroupIdx.FIRST
-): String {
-    return qAlign(QAlign.CENTER, *places, onlyFirstMatch = onlyFirstMatch, oddLengthTuning = oddLengthTuning, groupIdx = groupIdx)
-}
-
-// CallChain[size=8] = String.qIsNumber() <-[Call]- String.qAlignCenter() <-[Call]- String.qWithMinL ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun String.qIsNumber(): Boolean {
-    return this.trim().matches("""[\d./eE+-]+""".re)
-}
-
-// CallChain[size=8] = QGroupIdx <-[Ref]- String.qAlignCenter() <-[Call]- String.qWithMinLength() <- ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal enum class QGroupIdx(val idx: Int) {
-    // CallChain[size=9] = QGroupIdx.ENTIRE_MATCH <-[Call]- String.qAlign() <-[Call]- String.qAlignCente ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    ENTIRE_MATCH(0),
-    // CallChain[size=8] = QGroupIdx.FIRST <-[Call]- String.qAlignCenter() <-[Call]- String.qWithMinLeng ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    FIRST(1),
-    // CallChain[size=12] = QGroupIdx.SECOND <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResul ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    SECOND(2),
-    // CallChain[size=12] = QGroupIdx.THIRD <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    THIRD(3),
-    // CallChain[size=12] = QGroupIdx.FOURTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResul ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    FOURTH(4),
-    // CallChain[size=12] = QGroupIdx.FIFTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    FIFTH(5),
-    // CallChain[size=12] = QGroupIdx.SIXTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    SIXTH(6),
-    // CallChain[size=12] = QGroupIdx.SEVENTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResu ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    SEVENTH(7),
-    // CallChain[size=12] = QGroupIdx.EIGHTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResul ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    EIGHTH(8),
-    // CallChain[size=12] = QGroupIdx.NINTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    NINTH(9),
-    // CallChain[size=12] = QGroupIdx.TENTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    TENTH(10);
-}
-
-// CallChain[size=8] = String.qAlign() <-[Call]- String.qAlignCenter() <-[Call]- String.qWithMinLeng ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-private fun String.qAlign(
-    align: QAlign = QAlign.RIGHT,
-    vararg places: Regex,
-    onlyFirstMatch: Boolean = true,
-    keepLength: Boolean = false,
-    oddLengthTuning: QLR = if (qIsNumber()) QLR.RIGHT else QLR.LEFT,
-    groupIdx: QGroupIdx = QGroupIdx.ENTIRE_MATCH
-): String {
-    var text = this
-    for (p in places) {
-        text = QLineMatchResult(p, text, onlyFirstMatch, groupIdx).align(align, keepLength, oddLengthTuning)
-    }
-
-    return text
-}
-
 // CallChain[size=9] = QLineMatchResult <-[Call]- String.qAlign() <-[Call]- String.qAlignCenter() <- ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
 internal class QLineMatchResult(
     val regex: Regex,
@@ -244,6 +186,71 @@ internal class QLineMatchResult(
     }
 }
 
+// CallChain[size=10] = qSize <-[Call]- QLineMatchResult.align() <-[Call]- String.qAlign() <-[Call]- ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+private val IntRange.qSize: Int
+    get() = abs(last - first) + 1
+
+// CallChain[size=8] = String.qIsNumber() <-[Call]- String.qAlignCenter() <-[Call]- String.qWithMinL ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun String.qIsNumber(): Boolean {
+    return this.trim().matches("""[\d./eE+-]+""".re)
+}
+
+// CallChain[size=7] = String.qAlignCenter() <-[Call]- String.qWithMinLength() <-[Call]- String.qWit ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun String.qAlignCenter(
+    vararg places: Regex = arrayOf("(.*)".re),
+    onlyFirstMatch: Boolean = true,
+    oddLengthTuning: QLR = if (qIsNumber()) QLR.RIGHT else QLR.LEFT,
+    groupIdx: QGroupIdx = QGroupIdx.FIRST
+): String {
+    return qAlign(QAlign.CENTER, *places, onlyFirstMatch = onlyFirstMatch, oddLengthTuning = oddLengthTuning, groupIdx = groupIdx)
+}
+
+// CallChain[size=8] = String.qAlign() <-[Call]- String.qAlignCenter() <-[Call]- String.qWithMinLeng ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+private fun String.qAlign(
+    align: QAlign = QAlign.RIGHT,
+    vararg places: Regex,
+    onlyFirstMatch: Boolean = true,
+    keepLength: Boolean = false,
+    oddLengthTuning: QLR = if (qIsNumber()) QLR.RIGHT else QLR.LEFT,
+    groupIdx: QGroupIdx = QGroupIdx.ENTIRE_MATCH
+): String {
+    var text = this
+    for (p in places) {
+        text = QLineMatchResult(p, text, onlyFirstMatch, groupIdx).align(align, keepLength, oddLengthTuning)
+    }
+
+    return text
+}
+
+// CallChain[size=11] = QLeftRight <-[Ref]- QLineMatchResult.colDestPos <-[Call]- QLineMatchResult.a ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal data class QLeftRight(val left: Int, val right: Int)
+
+// CallChain[size=8] = QGroupIdx <-[Ref]- String.qAlignCenter() <-[Call]- String.qWithMinLength() <- ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal enum class QGroupIdx(val idx: Int) {
+    // CallChain[size=9] = QGroupIdx.ENTIRE_MATCH <-[Call]- String.qAlign() <-[Call]- String.qAlignCente ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    ENTIRE_MATCH(0),
+    // CallChain[size=8] = QGroupIdx.FIRST <-[Call]- String.qAlignCenter() <-[Call]- String.qWithMinLeng ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    FIRST(1),
+    // CallChain[size=12] = QGroupIdx.SECOND <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResul ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    SECOND(2),
+    // CallChain[size=12] = QGroupIdx.THIRD <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    THIRD(3),
+    // CallChain[size=12] = QGroupIdx.FOURTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResul ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    FOURTH(4),
+    // CallChain[size=12] = QGroupIdx.FIFTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    FIFTH(5),
+    // CallChain[size=12] = QGroupIdx.SIXTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    SIXTH(6),
+    // CallChain[size=12] = QGroupIdx.SEVENTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResu ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    SEVENTH(7),
+    // CallChain[size=12] = QGroupIdx.EIGHTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResul ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    EIGHTH(8),
+    // CallChain[size=12] = QGroupIdx.NINTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    NINTH(9),
+    // CallChain[size=12] = QGroupIdx.TENTH <-[Propag]- QGroupIdx.QGroupIdx() <-[Call]- QLineMatchResult ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    TENTH(10);
+}
+
 // CallChain[size=10] = String.qMoveCenter() <-[Call]- QLineMatchResult.align() <-[Call]- String.qAl ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
 // always keep length
 private fun String.qMoveCenter(range: IntRange, oddLengthTuning: QLR): String {
@@ -266,36 +273,6 @@ private fun String.qMoveCenter(range: IntRange, oddLengthTuning: QLR): String {
 //    return substring(
 //        0, range.first
 //    ) + " ".repeat(nLeftSpaceTarget) + nonSpaceChars + " ".repeat(nRightSpaceTarget) + substring(range.last + 1, length)
-}
-
-// CallChain[size=11] = QLeftRight <-[Ref]- QLineMatchResult.colDestPos <-[Call]- QLineMatchResult.a ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal data class QLeftRight(val left: Int, val right: Int)
-
-// CallChain[size=10] = qSize <-[Call]- QLineMatchResult.align() <-[Call]- String.qAlign() <-[Call]- ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-private val IntRange.qSize: Int
-    get() = abs(last - first) + 1
-
-// CallChain[size=10] = String.qMoveRight() <-[Call]- QLineMatchResult.align() <-[Call]- String.qAli ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-private fun String.qMoveRight(range: IntRange, destRangeLeft: Int, keepLength: Boolean): String {
-    val regionText = qSubstring(range)
-
-    val nSpaces = destRangeLeft - range.first
-
-    if (nSpaces <= 0) return this
-
-    val spaces = " ".repeat(nSpaces)
-
-    return if (keepLength) {
-        if (range.last + 1 > length) return this
-
-        if (range.last + 1 + nSpaces > length) return this
-
-        if (substring(range.last + 1, range.last + 1 + nSpaces).isNotBlank()) return this
-
-        replaceRange(IntRange(range.first, range.last - nSpaces), spaces + regionText)
-    } else {
-        replaceRange(range, spaces + regionText)
-    }
 }
 
 // CallChain[size=10] = String.qMoveLeft() <-[Call]- QLineMatchResult.align() <-[Call]- String.qAlig ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
@@ -322,4 +299,27 @@ private fun String.qMoveLeft(range: IntRange, destRangeLeft: Int, keepLength: Bo
 
     // add spaces to the right
     return first + rightSpaces + substring(range.last + 1, length)
+}
+
+// CallChain[size=10] = String.qMoveRight() <-[Call]- QLineMatchResult.align() <-[Call]- String.qAli ...  <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+private fun String.qMoveRight(range: IntRange, destRangeLeft: Int, keepLength: Boolean): String {
+    val regionText = qSubstring(range)
+
+    val nSpaces = destRangeLeft - range.first
+
+    if (nSpaces <= 0) return this
+
+    val spaces = " ".repeat(nSpaces)
+
+    return if (keepLength) {
+        if (range.last + 1 > length) return this
+
+        if (range.last + 1 + nSpaces > length) return this
+
+        if (substring(range.last + 1, range.last + 1 + nSpaces).isNotBlank()) return this
+
+        replaceRange(IntRange(range.first, range.last - nSpaces), spaces + regionText)
+    } else {
+        replaceRange(range, spaces + regionText)
+    }
 }

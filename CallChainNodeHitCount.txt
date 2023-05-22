@@ -1,23 +1,23 @@
 ## main
-                           N.depthFirst() [KtNamedFunction] <Top Level> : 399
-                             QE.throwIt() [KtNamedFunction] <Top Level> : 395
-          QException.QException() [KtPrimaryConstructor] <Second Level> : 330
-          QException.printStackTrace() [KtNamedFunction] <Second Level> : 186
-                   QException.mySrcAndStack [KtProperty] <Second Level> : 185
-                        qLogStackFrames() [KtNamedFunction] <Top Level> : 162
-                 QException.toString() [KtNamedFunction] <Second Level> : 132
-                QException.qToString() [KtNamedFunction] <Second Level> : 131
-                                        yellow [KtProperty] <Top Level> : 112
-                     qMySrcLinesAtFrame() [KtNamedFunction] <Top Level> :  96
+                                   N.depthFirst() [KtNamedFunction] <Top Level> : 401
+                                     QE.throwIt() [KtNamedFunction] <Top Level> : 397
+                  QException.QException() [KtPrimaryConstructor] <Second Level> : 332
+                  QException.printStackTrace() [KtNamedFunction] <Second Level> : 186
+                           QException.mySrcAndStack [KtProperty] <Second Level> : 185
+                                qLogStackFrames() [KtNamedFunction] <Top Level> : 162
+                         QException.toString() [KtNamedFunction] <Second Level> : 134
+                        QException.qToString() [KtNamedFunction] <Second Level> : 133
+                                                yellow [KtProperty] <Top Level> : 113
+                             qMySrcLinesAtFrame() [KtNamedFunction] <Top Level> :  96
 
 ## test
-  QTreeNodeTest.testDepthFirstSearch() [KtNamedFunction] <Second Level> : 455
-                          Any?.shouldBe() [KtNamedFunction] <Top Level> : 419
-                              qBrackets() [KtNamedFunction] <Top Level> : 200
-                     QE.throwItBrackets() [KtNamedFunction] <Top Level> : 194
-          QException.QException() [KtPrimaryConstructor] <Second Level> : 192
-          QException.printStackTrace() [KtNamedFunction] <Second Level> : 178
-                   QException.mySrcAndStack [KtProperty] <Second Level> : 177
-                                   main() [KtNamedFunction] <Top Level> : 171
-                                  qTest() [KtNamedFunction] <Top Level> : 170
-                        qLogStackFrames() [KtNamedFunction] <Top Level> : 155
+          QTreeNodeTest.testDepthFirstSearch() [KtNamedFunction] <Second Level> : 457
+                                  Any?.shouldBe() [KtNamedFunction] <Top Level> : 421
+                                      qBrackets() [KtNamedFunction] <Top Level> : 200
+                             QE.throwItBrackets() [KtNamedFunction] <Top Level> : 194
+                  QException.QException() [KtPrimaryConstructor] <Second Level> : 192
+                  QException.printStackTrace() [KtNamedFunction] <Second Level> : 178
+                           QException.mySrcAndStack [KtProperty] <Second Level> : 177
+                                           main() [KtNamedFunction] <Top Level> : 171
+                                          qTest() [KtNamedFunction] <Top Level> : 170
+                                qLogStackFrames() [KtNamedFunction] <Top Level> : 155

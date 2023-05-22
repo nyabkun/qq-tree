@@ -24,20 +24,9 @@ import kotlin.reflect.KClass
 import nyab.conf.QE
 import nyab.conf.QMyPath
 import nyab.match.QMMethod
-import nyab.match.and
 
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
-
-// CallChain[size=3] = qThisFileMainClass <-[Call]- qTest() <-[Call]- main()[Root]
-internal val qThisFileMainClass: Class<*>
-    get() = qCallerFileMainClass()
-
-// CallChain[size=3] = Class<*>.qMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun Class<*>.qMethods(matcher: QMMethod = QMMethod.DeclaredOnly): List<Method> {
-    val allMethods = if (matcher.declaredOnly) declaredMethods else methods
-    return allMethods.filter { matcher.matches(it) }
-}
 
 // CallChain[size=4] = AccessibleObject.qTrySetAccessible() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
 internal fun AccessibleObject.qTrySetAccessible() {
@@ -50,9 +39,14 @@ internal fun AccessibleObject.qTrySetAccessible() {
     }
 }
 
-// CallChain[size=4] = Method.qIsInstanceMethod() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun Method.qIsInstanceMethod(): Boolean {
-    return !Modifier.isStatic(this.modifiers)
+// CallChain[size=3] = qThisFileMainClass <-[Call]- qTest() <-[Call]- main()[Root]
+internal val qThisFileMainClass: Class<*>
+    get() = qCallerFileMainClass()
+
+// CallChain[size=3] = Class<*>.qMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun Class<*>.qMethods(matcher: QMMethod = QMMethod.DeclaredOnly): List<Method> {
+    val allMethods = if (matcher.declaredOnly) declaredMethods else methods
+    return allMethods.filter { matcher.matches(it) }
 }
 
 // CallChain[size=4] = Class<T>.qNewInstance() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
@@ -72,15 +66,6 @@ internal fun <T : Any> Class<T>.qConstructor(vararg params: Any, declaredOnly: B
     }
 }
 
-// CallChain[size=6] = Class<*>.qIsAssignableFrom() <-[Call]- QMatchMethodParams.matches() <-[Propag]- QMatchMethodParams <-[Call]- QMMethod.NoParams <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun Class<*>.qIsAssignableFrom(subclass: Class<*>, autoboxing: Boolean = true): Boolean {
-    return if (autoboxing) {
-        this.qPrimitiveToWrapper().isAssignableFrom(subclass.qPrimitiveToWrapper())
-    } else {
-        this.isAssignableFrom(subclass)
-    }
-}
-
 // CallChain[size=7] = Class<*>.qPrimitiveToWrapper() <-[Call]- Class<*>.qIsAssignableFrom() <-[Call ... -[Propag]- QMatchMethodParams <-[Call]- QMMethod.NoParams <-[Call]- qTest() <-[Call]- main()[Root]
 internal fun Class<*>.qPrimitiveToWrapper(): Class<*> = qJVMPrimitiveToWrapperMap[this] ?: this
 
@@ -97,6 +82,20 @@ internal val qJVMPrimitiveToWrapperMap by lazy {
     map[java.lang.Double.TYPE] = java.lang.Double::class.java
     map[java.lang.Float.TYPE] = java.lang.Float::class.java
     map
+}
+
+// CallChain[size=6] = Class<*>.qIsAssignableFrom() <-[Call]- QMatchMethodParams.matches() <-[Propag]- QMatchMethodParams <-[Call]- QMMethod.NoParams <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun Class<*>.qIsAssignableFrom(subclass: Class<*>, autoboxing: Boolean = true): Boolean {
+    return if (autoboxing) {
+        this.qPrimitiveToWrapper().isAssignableFrom(subclass.qPrimitiveToWrapper())
+    } else {
+        this.isAssignableFrom(subclass)
+    }
+}
+
+// CallChain[size=4] = Method.qIsInstanceMethod() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun Method.qIsInstanceMethod(): Boolean {
+    return !Modifier.isStatic(this.modifiers)
 }
 
 // CallChain[size=4] = qCallerFileMainClass() <-[Call]- qThisFileMainClass <-[Call]- qTest() <-[Call]- main()[Root]

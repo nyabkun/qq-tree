@@ -17,11 +17,11 @@ import nyab.conf.QMyPath
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=10] = path <-[Call]- QMyPath.src_root <-[Call]- qLogStackFrames() <-[Call]- QExcep ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal val String.path: Path
-    get() = Paths.get(this.trim()).toAbsolutePath().normalize()
-
 // CallChain[size=3] = StringBuilder.plusAssign() <-[Call]- N.tree() <-[Call]- QTreeNodeTest.testLargeIntTree()[Root]
 internal operator fun StringBuilder.plusAssign(str: String) {
     this.append(str)
 }
+
+// CallChain[size=10] = path <-[Call]- QMyPath.src_root <-[Call]- qLogStackFrames() <-[Call]- QExcep ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal val String.path: Path
+    get() = Paths.get(this.trim()).toAbsolutePath().normalize()

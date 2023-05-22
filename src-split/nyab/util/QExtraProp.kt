@@ -18,21 +18,6 @@ import java.nio.file.Path
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=2] = Any.qGetExPropOrNull() <-[Call]- parent[Root]
-internal fun Any.qGetExPropOrNull(key: String): Any? = synchronized(QExProps) {
-    return qGetExPropOrDefault(key, null)
-}
-
-// CallChain[size=2] = Any.qSetExProp() <-[Call]- parent[Root]
-internal fun Any.qSetExProp(key: String, value: Any?) = synchronized(QExProps) {
-    var props = QExProps.get(this)
-    if (props == null) {
-        props = HashMap(2)
-        QExProps.put(this, props)
-    }
-    props[key] = value
-}
-
 // CallChain[size=3] = QExProps <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
 /**
  * Minimal Version of IdentityWeakHashMap.
@@ -76,6 +61,16 @@ private object QExProps {
     }
 }
 
+// CallChain[size=2] = Any.qSetExProp() <-[Call]- parent[Root]
+internal fun Any.qSetExProp(key: String, value: Any?) = synchronized(QExProps) {
+    var props = QExProps.get(this)
+    if (props == null) {
+        props = HashMap(2)
+        QExProps.put(this, props)
+    }
+    props[key] = value
+}
+
 // CallChain[size=2] = Any.qGetExProp() <-[Call]- children[Root]
 internal fun Any.qGetExProp(key: String): Any? = synchronized(QExProps) {
     val props = QExProps.get(this) ?: return null
@@ -88,4 +83,9 @@ internal fun <T> Any.qGetExPropOrDefault(key: String, default: T): T = synchroni
     val props = QExProps.get(this) ?: return default
 
     return props.getOrDefault(key, default) as T
+}
+
+// CallChain[size=2] = Any.qGetExPropOrNull() <-[Call]- parent[Root]
+internal fun Any.qGetExPropOrNull(key: String): Any? = synchronized(QExProps) {
+    return qGetExPropOrDefault(key, null)
 }

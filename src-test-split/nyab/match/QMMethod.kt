@@ -19,6 +19,101 @@ import nyab.util.qIsAssignableFrom
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
+// CallChain[size=4] = not <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
+private val QMMethod.not: QMMethod
+    get() = QMatchMethodNot(this)
+
+// CallChain[size=4] = qAnd() <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
+private fun qAnd(vararg matches: QMMethod): QMMethod = QMatchMethodAnd(*matches)
+
+// CallChain[size=4] = qOr() <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
+private fun qOr(vararg matches: QMMethod): QMMethod = QMatchMethodOr(*matches)
+
+// CallChain[size=3] = QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
+internal infix fun QMMethod.and(match: QMMethod): QMMethod {
+    return if (this is QMatchMethodAnd) {
+        QMatchMethodAnd(*matchList, match)
+    } else {
+        qAnd(this, match)
+    }
+}
+
+// CallChain[size=3] = QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
+internal infix fun QMMethod.or(match: QMMethod): QMMethod {
+    return if (this is QMatchMethodOr) {
+        QMatchMethodOr(*matchList, match)
+    } else {
+        qOr(this, match)
+    }
+}
+
+// CallChain[size=5] = QMatchMethodNot <-[Call]- not <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
+private class QMatchMethodNot(val matcher: QMMethod) : QMMethodA() {
+    // CallChain[size=6] = QMatchMethodNot.matches() <-[Propag]- QMatchMethodNot <-[Call]- not <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(value: Method): Boolean = !matcher.matches(value)
+}
+
+// CallChain[size=5] = QMatchMethodAny <-[Call]- QMMethod.isAny() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
+private object QMatchMethodAny : QMMethodA() {
+    // CallChain[size=6] = QMatchMethodAny.matches() <-[Propag]- QMatchMethodAny <-[Call]- QMMethod.isAny() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(value: Method): Boolean {
+        return true
+    }
+}
+
+// CallChain[size=5] = QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
+private object QMatchMethodNone : QMMethodA() {
+    // CallChain[size=6] = QMatchMethodNone.matches() <-[Propag]- QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(value: Method): Boolean {
+        return false
+    }
+}
+
+// CallChain[size=4] = QMatchMethodDeclaredOnly <-[Call]- QMMethod.DeclaredOnly <-[Call]- qTest() <-[Call]- main()[Root]
+private object QMatchMethodDeclaredOnly : QMMethodA() {
+    // CallChain[size=5] = QMatchMethodDeclaredOnly.declaredOnly <-[Propag]- QMatchMethodDeclaredOnly <-[Call]- QMMethod.DeclaredOnly <-[Call]- qTest() <-[Call]- main()[Root]
+    override val declaredOnly = true
+
+    // CallChain[size=5] = QMatchMethodDeclaredOnly.matches() <-[Propag]- QMatchMethodDeclaredOnly <-[Call]- QMMethod.DeclaredOnly <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(value: Method): Boolean {
+        return true
+    }
+}
+
+// CallChain[size=4] = QMatchMethodAnd <-[Ref]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
+private class QMatchMethodAnd(vararg match: QMMethod) : QMMethodA() {
+    // CallChain[size=4] = QMatchMethodAnd.matchList <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
+    val matchList = match
+
+    // CallChain[size=5] = QMatchMethodAnd.declaredOnly <-[Propag]- QMatchMethodAnd.matchList <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
+    override val declaredOnly = matchList.any { it.declaredOnly }
+
+    // CallChain[size=5] = QMatchMethodAnd.matches() <-[Propag]- QMatchMethodAnd.matchList <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(value: Method): Boolean {
+        return matchList.all { it.matches(value) }
+    }
+}
+
+// CallChain[size=4] = QMatchMethodOr <-[Ref]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
+private class QMatchMethodOr(vararg match: QMMethod) : QMMethodA() {
+    // CallChain[size=4] = QMatchMethodOr.matchList <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
+    val matchList = match
+
+    // CallChain[size=5] = QMatchMethodOr.declaredOnly <-[Propag]- QMatchMethodOr.matchList <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
+    override val declaredOnly = matchList.any { it.declaredOnly }
+
+    // CallChain[size=5] = QMatchMethodOr.matches() <-[Propag]- QMatchMethodOr.matchList <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
+    override fun matches(value: Method): Boolean {
+        return matchList.any { it.matches(value) }
+    }
+}
+
+// CallChain[size=6] = QMMethodA <-[Call]- QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
+private abstract class QMMethodA : QMMethod {
+    // CallChain[size=7] = QMMethodA.declaredOnly <-[Propag]- QMMethodA <-[Call]- QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
+    override val declaredOnly: Boolean = false
+}
+
 // CallChain[size=3] = QMMethod <-[Ref]- qTest() <-[Call]- main()[Root]
 internal interface QMMethod {
     // CallChain[size=4] = QMMethod.declaredOnly <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
@@ -66,46 +161,6 @@ internal interface QMMethod {
     }
 }
 
-// CallChain[size=3] = QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
-internal infix fun QMMethod.or(match: QMMethod): QMMethod {
-    return if (this is QMatchMethodOr) {
-        QMatchMethodOr(*matchList, match)
-    } else {
-        qOr(this, match)
-    }
-}
-
-// CallChain[size=3] = QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
-internal infix fun QMMethod.and(match: QMMethod): QMMethod {
-    return if (this is QMatchMethodAnd) {
-        QMatchMethodAnd(*matchList, match)
-    } else {
-        qAnd(this, match)
-    }
-}
-
-// CallChain[size=5] = QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
-private object QMatchMethodNone : QMMethodA() {
-    // CallChain[size=6] = QMatchMethodNone.matches() <-[Propag]- QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(value: Method): Boolean {
-        return false
-    }
-}
-
-// CallChain[size=6] = QMMethodA <-[Call]- QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
-private abstract class QMMethodA : QMMethod {
-    // CallChain[size=7] = QMMethodA.declaredOnly <-[Propag]- QMMethodA <-[Call]- QMatchMethodNone <-[Call]- QMMethod.isNone() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
-    override val declaredOnly: Boolean = false
-}
-
-// CallChain[size=5] = QMatchMethodAny <-[Call]- QMMethod.isAny() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
-private object QMatchMethodAny : QMMethodA() {
-    // CallChain[size=6] = QMatchMethodAny.matches() <-[Propag]- QMatchMethodAny <-[Call]- QMMethod.isAny() <-[Propag]- QMMethod.matches() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(value: Method): Boolean {
-        return true
-    }
-}
-
 // CallChain[size=4] = QMatchMethodName <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
 private class QMatchMethodName(val nameMatcher: QM) : QMMethodA() {
     // CallChain[size=5] = QMatchMethodName.matches() <-[Propag]- QMatchMethodName <-[Call]- QMMethod.nameNotExact() <-[Call]- qTest() <-[Call]- main()[Root]
@@ -136,17 +191,6 @@ private class QMatchMethodParams(val params: Array<Class<*>?>) : QMMethodA() {
     }
 }
 
-// CallChain[size=4] = QMatchMethodDeclaredOnly <-[Call]- QMMethod.DeclaredOnly <-[Call]- qTest() <-[Call]- main()[Root]
-private object QMatchMethodDeclaredOnly : QMMethodA() {
-    // CallChain[size=5] = QMatchMethodDeclaredOnly.declaredOnly <-[Propag]- QMatchMethodDeclaredOnly <-[Call]- QMMethod.DeclaredOnly <-[Call]- qTest() <-[Call]- main()[Root]
-    override val declaredOnly = true
-
-    // CallChain[size=5] = QMatchMethodDeclaredOnly.matches() <-[Propag]- QMatchMethodDeclaredOnly <-[Call]- QMMethod.DeclaredOnly <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(value: Method): Boolean {
-        return true
-    }
-}
-
 // CallChain[size=4] = QMatchMethodAnnotation <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
 private class QMatchMethodAnnotation<T : Annotation>(val annotation: Class<T>, val matcher: (T) -> Boolean) : QMMethodA() {
     // CallChain[size=5] = QMatchMethodAnnotation.matches() <-[Propag]- QMatchMethodAnnotation <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
@@ -156,33 +200,6 @@ private class QMatchMethodAnnotation<T : Annotation>(val annotation: Class<T>, v
         return matcher(anno)
     }
 }
-
-// CallChain[size=4] = not <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
-private val QMMethod.not: QMMethod
-    get() = QMatchMethodNot(this)
-
-// CallChain[size=5] = QMatchMethodNot <-[Call]- not <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
-private class QMatchMethodNot(val matcher: QMMethod) : QMMethodA() {
-    // CallChain[size=6] = QMatchMethodNot.matches() <-[Propag]- QMatchMethodNot <-[Call]- not <-[Call]- QMMethod.notAnnotation() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(value: Method): Boolean = !matcher.matches(value)
-}
-
-// CallChain[size=4] = QMatchMethodAnd <-[Ref]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
-private class QMatchMethodAnd(vararg match: QMMethod) : QMMethodA() {
-    // CallChain[size=4] = QMatchMethodAnd.matchList <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
-    val matchList = match
-
-    // CallChain[size=5] = QMatchMethodAnd.declaredOnly <-[Propag]- QMatchMethodAnd.matchList <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
-    override val declaredOnly = matchList.any { it.declaredOnly }
-
-    // CallChain[size=5] = QMatchMethodAnd.matches() <-[Propag]- QMatchMethodAnd.matchList <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(value: Method): Boolean {
-        return matchList.all { it.matches(value) }
-    }
-}
-
-// CallChain[size=4] = qAnd() <-[Call]- QMMethod.and() <-[Call]- qTest() <-[Call]- main()[Root]
-private fun qAnd(vararg matches: QMMethod): QMMethod = QMatchMethodAnd(*matches)
 
 // CallChain[size=4] = QMatchMethodAnnotationName <-[Call]- QMMethod.annotation() <-[Call]- qTest() <-[Call]- main()[Root]
 private class QMatchMethodAnnotationName(val nameMatcher: QM, val declaredAnnotationsOnly: Boolean = false) : QMMethodA() {
@@ -199,20 +216,3 @@ private class QMatchMethodAnnotationName(val nameMatcher: QM, val declaredAnnota
         }
     }
 }
-
-// CallChain[size=4] = QMatchMethodOr <-[Ref]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
-private class QMatchMethodOr(vararg match: QMMethod) : QMMethodA() {
-    // CallChain[size=4] = QMatchMethodOr.matchList <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
-    val matchList = match
-
-    // CallChain[size=5] = QMatchMethodOr.declaredOnly <-[Propag]- QMatchMethodOr.matchList <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
-    override val declaredOnly = matchList.any { it.declaredOnly }
-
-    // CallChain[size=5] = QMatchMethodOr.matches() <-[Propag]- QMatchMethodOr.matchList <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
-    override fun matches(value: Method): Boolean {
-        return matchList.any { it.matches(value) }
-    }
-}
-
-// CallChain[size=4] = qOr() <-[Call]- QMMethod.or() <-[Call]- qTest() <-[Call]- main()[Root]
-private fun qOr(vararg matches: QMMethod): QMMethod = QMatchMethodOr(*matches)

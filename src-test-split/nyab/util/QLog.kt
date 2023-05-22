@@ -21,46 +21,22 @@ import nyab.conf.QMyPath
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=3] = qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal fun qBrackets(vararg keysAndValues: Any?): String {
-    if (keysAndValues.size % 2 != 0) {
-        QE.ShouldBeEvenNumber.throwItBrackets("KeysAndValues.size", keysAndValues.size)
+// CallChain[size=12] = qARROW <-[Call]- qArrow() <-[Call]- QLogStyle.qLogArrow() <-[Call]- QLogStyl ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal val qARROW = "===>".light_cyan
+
+// CallChain[size=4] = qIsDebugging <-[Call]- qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// https://stackoverflow.com/a/28754689/5570400
+internal val qIsDebugging by lazy {
+    java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments.toString().indexOf("jdwp") >= 0
+}
+
+// CallChain[size=4] = qIsTesting <-[Call]- qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// https://stackoverflow.com/a/12717377/5570400
+internal val qIsTesting by lazy {
+    qStackFrames(size = Int.MAX_VALUE).any {
+        it.methodName.equals("qTest") ||
+                it.className.startsWith("org.junit.") || it.className.startsWith("org.testng.")
     }
-
-    return keysAndValues.asSequence().withIndex().chunked(2) { (key, value) ->
-        if (value.index != keysAndValues.size) { // last
-            key.value.toString().qBracketStartOrMiddle(value.value)
-        } else {
-            key.value.toString().qBracketEnd(value.value)
-        }
-    }.joinToString("")
-}
-
-// CallChain[size=4] = String.qBracketStartOrMiddle() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-/**
- * ```
- * [key1]  value1   [key2]  value2
- * ```
- */
-private fun String.qBracketStartOrMiddle(value: Any?): String {
-    val valStr = value.qToLogString().qWithSpacePrefix(2, onlyIf = QOnlyIfStr.SingleLine).qWithSpaceSuffix(3)
-            .qWithNewLineSurround(onlyIf = QOnlyIfStr.Multiline)
-
-    return "[$this]$valStr"
-}
-
-// CallChain[size=4] = String.qBracketEnd() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-/**
- * ```
- * [key1]  value1   [key2]  value2
- * ```
- */
-private fun String.qBracketEnd(value: Any?): String {
-    val valStr =
-            value.qToLogString().qWithSpacePrefix(2, onlyIf = QOnlyIfStr.SingleLine)
-                    .qWithNewLineSurround(onlyIf = QOnlyIfStr.Multiline)
-
-    return "[$this]$valStr"
 }
 
 // CallChain[size=6] = QSrcCut <-[Ref]- QException.QException() <-[Ref]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -84,52 +60,6 @@ internal class QSrcCut(
         val NOCUT_JUST_SINGLE_LINE = QSrcCut(QFetchRule.SINGLE_LINE) { it }
         
     }
-}
-
-// CallChain[size=8] = qLogStackFrames() <-[Call]- QException.mySrcAndStack <-[Call]- QException.pri ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal fun qLogStackFrames(
-        frames: List<StackFrame>,
-        msg: Any? = "",
-        style: QLogStyle = QLogStyle.S,
-        srcRoots: List<Path> = QMyPath.src_root,
-        srcCharset: Charset = Charsets.UTF_8,
-        srcCut: QSrcCut = QSrcCut.SINGLE_qLog_PARAM,
-        quiet: Boolean = false,
-        noColor: Boolean = false,
-): String {
-
-    var mySrc = qMySrcLinesAtFrame(frame = frames[0], srcCut = srcCut, srcRoots = srcRoots, srcCharset = srcCharset)
-
-    if (mySrc.trimStart().startsWith("}.") || mySrc.trimStart().startsWith(").") || mySrc.trimStart()
-                    .startsWith("\"\"\"")
-    ) {
-        // Maybe you want to check multiple lines
-
-        val multilineCut = QSrcCut(QFetchRule.SMART_FETCH, srcCut.cut)
-
-        mySrc = qMySrcLinesAtFrame(
-                frame = frames[0], srcCut = multilineCut, srcRoots = srcRoots, srcCharset = srcCharset
-        )
-    }
-
-    val stackTrace = if (style.stackReverseOrder) {
-        frames.reversed().joinToString("\n") { it.toString() }
-    } else {
-        frames.joinToString("\n") { it.toString() }
-    }
-
-    val output = style.template(
-            msg.qToLogString(), mySrc, qNow, stackTrace
-    )
-
-    val text = style.start + output + style.end
-
-    val finalTxt = if (noColor) text.noColor else text
-
-    if (!quiet)
-        style.out.print(finalTxt)
-
-    return if (noColor) output.noColor else output
 }
 
 // CallChain[size=9] = QLogStyle <-[Ref]- QLogStyle.SRC_AND_STACK <-[Call]- QException.mySrcAndStack ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -218,6 +148,52 @@ internal fun qMySrcLinesAtFrame(
     }
 }
 
+// CallChain[size=8] = qLogStackFrames() <-[Call]- QException.mySrcAndStack <-[Call]- QException.pri ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal fun qLogStackFrames(
+        frames: List<StackFrame>,
+        msg: Any? = "",
+        style: QLogStyle = QLogStyle.S,
+        srcRoots: List<Path> = QMyPath.src_root,
+        srcCharset: Charset = Charsets.UTF_8,
+        srcCut: QSrcCut = QSrcCut.SINGLE_qLog_PARAM,
+        quiet: Boolean = false,
+        noColor: Boolean = false,
+): String {
+
+    var mySrc = qMySrcLinesAtFrame(frame = frames[0], srcCut = srcCut, srcRoots = srcRoots, srcCharset = srcCharset)
+
+    if (mySrc.trimStart().startsWith("}.") || mySrc.trimStart().startsWith(").") || mySrc.trimStart()
+                    .startsWith("\"\"\"")
+    ) {
+        // Maybe you want to check multiple lines
+
+        val multilineCut = QSrcCut(QFetchRule.SMART_FETCH, srcCut.cut)
+
+        mySrc = qMySrcLinesAtFrame(
+                frame = frames[0], srcCut = multilineCut, srcRoots = srcRoots, srcCharset = srcCharset
+        )
+    }
+
+    val stackTrace = if (style.stackReverseOrder) {
+        frames.reversed().joinToString("\n") { it.toString() }
+    } else {
+        frames.joinToString("\n") { it.toString() }
+    }
+
+    val output = style.template(
+            msg.qToLogString(), mySrc, qNow, stackTrace
+    )
+
+    val text = style.start + output + style.end
+
+    val finalTxt = if (noColor) text.noColor else text
+
+    if (!quiet)
+        style.out.print(finalTxt)
+
+    return if (noColor) output.noColor else output
+}
+
 // CallChain[size=10] = qSrcFileLinesAtFrame() <-[Call]- qMySrcLinesAtFrame() <-[Call]- qLogStackFra ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun qSrcFileLinesAtFrame(
         srcRoots: List<Path> = QMyPath.src_root,
@@ -244,20 +220,44 @@ internal fun qArrow(key: Any?, value: Any?): String {
     return "$keyStr$qARROW$valStr"
 }
 
-// CallChain[size=12] = qARROW <-[Call]- qArrow() <-[Call]- QLogStyle.qLogArrow() <-[Call]- QLogStyl ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal val qARROW = "===>".light_cyan
+// CallChain[size=4] = String.qBracketEnd() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+/**
+ * ```
+ * [key1]  value1   [key2]  value2
+ * ```
+ */
+private fun String.qBracketEnd(value: Any?): String {
+    val valStr =
+            value.qToLogString().qWithSpacePrefix(2, onlyIf = QOnlyIfStr.SingleLine)
+                    .qWithNewLineSurround(onlyIf = QOnlyIfStr.Multiline)
 
-// CallChain[size=4] = qIsTesting <-[Call]- qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-// https://stackoverflow.com/a/12717377/5570400
-internal val qIsTesting by lazy {
-    qStackFrames(size = Int.MAX_VALUE).any {
-        it.methodName.equals("qTest") ||
-                it.className.startsWith("org.junit.") || it.className.startsWith("org.testng.")
-    }
+    return "[$this]$valStr"
 }
 
-// CallChain[size=4] = qIsDebugging <-[Call]- qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-// https://stackoverflow.com/a/28754689/5570400
-internal val qIsDebugging by lazy {
-    java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments.toString().indexOf("jdwp") >= 0
+// CallChain[size=4] = String.qBracketStartOrMiddle() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+/**
+ * ```
+ * [key1]  value1   [key2]  value2
+ * ```
+ */
+private fun String.qBracketStartOrMiddle(value: Any?): String {
+    val valStr = value.qToLogString().qWithSpacePrefix(2, onlyIf = QOnlyIfStr.SingleLine).qWithSpaceSuffix(3)
+            .qWithNewLineSurround(onlyIf = QOnlyIfStr.Multiline)
+
+    return "[$this]$valStr"
+}
+
+// CallChain[size=3] = qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal fun qBrackets(vararg keysAndValues: Any?): String {
+    if (keysAndValues.size % 2 != 0) {
+        QE.ShouldBeEvenNumber.throwItBrackets("KeysAndValues.size", keysAndValues.size)
+    }
+
+    return keysAndValues.asSequence().withIndex().chunked(2) { (key, value) ->
+        if (value.index != keysAndValues.size) { // last
+            key.value.toString().qBracketStartOrMiddle(value.value)
+        } else {
+            key.value.toString().qBracketEnd(value.value)
+        }
+    }.joinToString("")
 }

@@ -69,187 +69,6 @@ import nyab.util.yellow
 @Target(AnnotationTarget.FUNCTION)
 internal annotation class QTest(val testOnlyThis: Boolean = false)
 
-// CallChain[size=2] = Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal infix fun Any?.shouldBe(expected: Any?) {
-    if (!qOkToTest()) return
-
-    if (expected is Boolean && this is Boolean && this != expected) {
-        if (expected) {
-            val msg = qFailMsg("it is false")
-
-            qThrowIt(msg, QE.ShouldBeTrue)
-        } else {
-            val msg = qFailMsg("it is true")
-
-            qThrowIt(msg, QE.ShouldBeFalse)
-        }
-    }
-
-    val thisStr = this.qToLogString()
-    val expectedStr = expected.qToLogString()
-
-    if (thisStr.trim().noColor != expectedStr.trim().noColor) {
-        val msg = qFailMsg(thisStr, "is not equals to", expectedStr)
-
-        val diffIdx =
-            if (expectedStr.length < thisStr.length) {
-                expectedStr.mapIndexedNotNull { idx, ch ->
-                    if (thisStr.length > idx && thisStr[idx] != ch) {
-                        idx
-                    } else {
-                        null
-                    }
-                }.firstOrNull()
-            } else {
-                thisStr.mapIndexedNotNull { idx, ch ->
-                    if (expectedStr.length > idx && expectedStr[idx] != ch) {
-                        idx
-                    } else {
-                        null
-                    }
-                }.firstOrNull()
-            }
-
-        if (diffIdx != null) {
-            val expectedChar = expectedStr[diffIdx]
-            val actualChar = thisStr[diffIdx]
-
-            qThrowIt(
-                msg + "\n" + qBrackets(
-                    "expected char at idx=$diffIdx".blue,
-                    expectedChar.toString().blue + (" ( CharCodeHex = " + expectedChar.qToHex() + " )").light_gray,
-                    "actual char at idx=$diffIdx".light_green,
-                    actualChar.toString().light_green + (" ( CharCodeHex = " + actualChar.qToHex() + " )").light_gray
-                ),
-                QE.ShouldBeEqual
-            )
-        } else {
-            qThrowIt(msg, QE.ShouldBeEqual)
-        }
-    }
-}
-
-// CallChain[size=3] = qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-private inline fun qOkToTest(): Boolean {
-    return QMyTest.forceTestMode || qIsTesting || qIsDebugging
-}
-
-// CallChain[size=3] = qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-private fun qFailMsg(msg: String = "it is null"): String {
-    val cMsg = "[$msg]".colorIt
-    return "${QMyMark.WARN} $cMsg"
-}
-
-// CallChain[size=3] = qThrowIt() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-private fun qThrowIt(msg: String, exception: QE) {
-    throw QException(exception, msg, null, stackDepth = 2, srcCut = QSrcCut.MULTILINE_INFIX_NOCUT)
-}
-
-// CallChain[size=3] = qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-private fun qFailMsg(actual: Any?, msg: String = "is not equals to", expected: Any?): String {
-    val cMsg = "[$msg]".colorIt
-    val actualStr = actual.qToLogString() + " " + "(actual)".light_green
-    val expectedStr = expected.qToLogString() + " " + "(expected)".blue
-    return "${QMyMark.WARN} ${actualStr.qWithNewLineSurround(onlyIf = QOnlyIfStr.Always)}$cMsg${
-    expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
-    }"
-}
-
-// CallChain[size=4] = colorIt <-[Call]- qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-private val String.colorIt: String
-    get() = this.light_yellow
-
-// CallChain[size=2] = qTest() <-[Call]- main()[Root]
-internal fun qTest(
-    vararg targetClasses: Class<*> = arrayOf(qThisFileMainClass),
-
-    targetMethodFilter: QMMethod =
-        (QMMethod.annotation(QTest::class) or QMMethod.annotation("Test")) and
-            QMMethod.notAnnotation(QTestHumanCheckRequired::class) and
-//                QMMethod.notAnnotation(QIgnore::class) and
-            QMMethod.DeclaredOnly and
-            QMMethod.NoParams and
-            QMMethod.nameNotExact("main"),
-
-    beforeMethodFilter: QMMethod =
-        (
-            QMMethod.annotation(QBeforeEach::class) or QMMethod.annotation("BeforeTest")
-                or QMMethod.annotation("BeforeEach")
-                or QMMethod.annotation("BeforeMethod")
-            )
-            and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
-            "main"
-        ),
-
-    afterMethodFilter: QMMethod =
-        (
-            QMMethod.annotation(QAfterEach::class) or QMMethod.annotation("AfterTest")
-                or QMMethod.annotation("AfterEach")
-                or QMMethod.annotation("AfterMethod")
-            ) and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
-            "main"
-        ),
-
-    out: QOut = QOut.CONSOLE,
-
-    throwsException: Boolean = true,
-): QTestResult {
-    val targets = targetClasses.joinToString(", ") { it.simpleName }
-
-    out.separator()
-
-    val callerFileName = qCallerFileName()
-
-    val methodsToTestImmediately = targetClasses.flatMap { cls ->
-        cls.qMethods().filter { method ->
-            (QMMethod.DeclaredOnly and QMMethod.annotation(QTest::class) { anno ->
-                anno.testOnlyThis
-            }).matches(method)
-        }
-    }
-
-    val methodsToTest = methodsToTestImmediately.ifEmpty {
-        targetClasses.flatMap {
-            it.qMethods().filter { method ->
-                targetMethodFilter.matches(method)
-            }
-        }.sortedBy {
-            it.name // TODO sort by line number
-        }
-    }
-
-    qLogStackFrames(
-        // "🚀"
-        msg = "${QMyMark.TEST_START} Test Start ${QMyMark.TEST_START}\n$targets".light_blue,
-        style = QLogStyle.MSG_AND_STACK,
-        frames = listOf(
-            qStackFrameEntryMethod { frame ->
-                frame.fileName == callerFileName
-            }
-        )
-    )
-
-    val before = targetClasses.flatMap {
-        it.qMethods().filter { method ->
-            beforeMethodFilter.matches(method)
-        }
-    }
-
-    val after = targetClasses.flatMap {
-        it.qMethods().filter { method ->
-            afterMethodFilter.matches(method)
-        }
-    }
-
-    val result = qTestMethods(methodsToTest, before, after)
-
-    if (result.numFail > 0 && throwsException) {
-        QE.TestFail.throwIt()
-    } else {
-        return result
-    }
-}
-
 // CallChain[size=3] = QTestHumanCheckRequired <-[Ref]- qTest() <-[Call]- main()[Root]
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
@@ -264,6 +83,25 @@ internal annotation class QBeforeEach
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 internal annotation class QAfterEach
+
+// CallChain[size=5] = QTestResultElement <-[Ref]- QTestResult.QTestResult() <-[Call]- QTestResult.numFail <-[Call]- qTest() <-[Call]- main()[Root]
+internal data class QTestResultElement(val method: Method, val cause: Throwable?) {
+    // CallChain[size=4] = QTestResultElement.success <-[Call]- QTestResult.numFail <-[Call]- qTest() <-[Call]- main()[Root]
+    val success: Boolean
+        get() = cause == null
+}
+
+// CallChain[size=5] = allTestedMethods <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal val List<QTestResultElement>.allTestedMethods: String
+    get() =
+        "\n[${"Tested".light_blue}]\n" +
+            this.joinToString("\n") {
+                if (it.success) {
+                    it.method.qName().green
+                } else {
+                    it.method.qName().light_red
+                }
+            }
 
 // CallChain[size=3] = QTestResult <-[Ref]- qTest() <-[Call]- main()[Root]
 internal class QTestResult(val elements: List<QTestResultElement>, val time: Long) {
@@ -403,21 +241,183 @@ private fun qTestMethods(
     return result
 }
 
-// CallChain[size=5] = QTestResultElement <-[Ref]- QTestResult.QTestResult() <-[Call]- QTestResult.numFail <-[Call]- qTest() <-[Call]- main()[Root]
-internal data class QTestResultElement(val method: Method, val cause: Throwable?) {
-    // CallChain[size=4] = QTestResultElement.success <-[Call]- QTestResult.numFail <-[Call]- qTest() <-[Call]- main()[Root]
-    val success: Boolean
-        get() = cause == null
+// CallChain[size=2] = qTest() <-[Call]- main()[Root]
+internal fun qTest(
+    vararg targetClasses: Class<*> = arrayOf(qThisFileMainClass),
+
+    targetMethodFilter: QMMethod =
+        (QMMethod.annotation(QTest::class) or QMMethod.annotation("Test")) and
+            QMMethod.notAnnotation(QTestHumanCheckRequired::class) and
+//                QMMethod.notAnnotation(QIgnore::class) and
+            QMMethod.DeclaredOnly and
+            QMMethod.NoParams and
+            QMMethod.nameNotExact("main"),
+
+    beforeMethodFilter: QMMethod =
+        (
+            QMMethod.annotation(QBeforeEach::class) or QMMethod.annotation("BeforeTest")
+                or QMMethod.annotation("BeforeEach")
+                or QMMethod.annotation("BeforeMethod")
+            )
+            and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
+            "main"
+        ),
+
+    afterMethodFilter: QMMethod =
+        (
+            QMMethod.annotation(QAfterEach::class) or QMMethod.annotation("AfterTest")
+                or QMMethod.annotation("AfterEach")
+                or QMMethod.annotation("AfterMethod")
+            ) and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
+            "main"
+        ),
+
+    out: QOut = QOut.CONSOLE,
+
+    throwsException: Boolean = true,
+): QTestResult {
+    val targets = targetClasses.joinToString(", ") { it.simpleName }
+
+    out.separator()
+
+    val callerFileName = qCallerFileName()
+
+    val methodsToTestImmediately = targetClasses.flatMap { cls ->
+        cls.qMethods().filter { method ->
+            (QMMethod.DeclaredOnly and QMMethod.annotation(QTest::class) { anno ->
+                anno.testOnlyThis
+            }).matches(method)
+        }
+    }
+
+    val methodsToTest = methodsToTestImmediately.ifEmpty {
+        targetClasses.flatMap {
+            it.qMethods().filter { method ->
+                targetMethodFilter.matches(method)
+            }
+        }.sortedBy {
+            it.name // TODO sort by line number
+        }
+    }
+
+    qLogStackFrames(
+        // "🚀"
+        msg = "${QMyMark.TEST_START} Test Start ${QMyMark.TEST_START}\n$targets".light_blue,
+        style = QLogStyle.MSG_AND_STACK,
+        frames = listOf(
+            qStackFrameEntryMethod { frame ->
+                frame.fileName == callerFileName
+            }
+        )
+    )
+
+    val before = targetClasses.flatMap {
+        it.qMethods().filter { method ->
+            beforeMethodFilter.matches(method)
+        }
+    }
+
+    val after = targetClasses.flatMap {
+        it.qMethods().filter { method ->
+            afterMethodFilter.matches(method)
+        }
+    }
+
+    val result = qTestMethods(methodsToTest, before, after)
+
+    if (result.numFail > 0 && throwsException) {
+        QE.TestFail.throwIt()
+    } else {
+        return result
+    }
 }
 
-// CallChain[size=5] = allTestedMethods <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal val List<QTestResultElement>.allTestedMethods: String
-    get() =
-        "\n[${"Tested".light_blue}]\n" +
-            this.joinToString("\n") {
-                if (it.success) {
-                    it.method.qName().green
-                } else {
-                    it.method.qName().light_red
-                }
+// CallChain[size=3] = qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+private fun qFailMsg(msg: String = "it is null"): String {
+    val cMsg = "[$msg]".colorIt
+    return "${QMyMark.WARN} $cMsg"
+}
+
+// CallChain[size=3] = qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+private fun qFailMsg(actual: Any?, msg: String = "is not equals to", expected: Any?): String {
+    val cMsg = "[$msg]".colorIt
+    val actualStr = actual.qToLogString() + " " + "(actual)".light_green
+    val expectedStr = expected.qToLogString() + " " + "(expected)".blue
+    return "${QMyMark.WARN} ${actualStr.qWithNewLineSurround(onlyIf = QOnlyIfStr.Always)}$cMsg${
+    expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
+    }"
+}
+
+// CallChain[size=4] = colorIt <-[Call]- qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+private val String.colorIt: String
+    get() = this.light_yellow
+
+// CallChain[size=3] = qThrowIt() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+private fun qThrowIt(msg: String, exception: QE) {
+    throw QException(exception, msg, null, stackDepth = 2, srcCut = QSrcCut.MULTILINE_INFIX_NOCUT)
+}
+
+// CallChain[size=2] = Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal infix fun Any?.shouldBe(expected: Any?) {
+    if (!qOkToTest()) return
+
+    if (expected is Boolean && this is Boolean && this != expected) {
+        if (expected) {
+            val msg = qFailMsg("it is false")
+
+            qThrowIt(msg, QE.ShouldBeTrue)
+        } else {
+            val msg = qFailMsg("it is true")
+
+            qThrowIt(msg, QE.ShouldBeFalse)
+        }
+    }
+
+    val thisStr = this.qToLogString()
+    val expectedStr = expected.qToLogString()
+
+    if (thisStr.trim().noColor != expectedStr.trim().noColor) {
+        val msg = qFailMsg(thisStr, "is not equals to", expectedStr)
+
+        val diffIdx =
+            if (expectedStr.length < thisStr.length) {
+                expectedStr.mapIndexedNotNull { idx, ch ->
+                    if (thisStr.length > idx && thisStr[idx] != ch) {
+                        idx
+                    } else {
+                        null
+                    }
+                }.firstOrNull()
+            } else {
+                thisStr.mapIndexedNotNull { idx, ch ->
+                    if (expectedStr.length > idx && expectedStr[idx] != ch) {
+                        idx
+                    } else {
+                        null
+                    }
+                }.firstOrNull()
             }
+
+        if (diffIdx != null) {
+            val expectedChar = expectedStr[diffIdx]
+            val actualChar = thisStr[diffIdx]
+
+            qThrowIt(
+                msg + "\n" + qBrackets(
+                    "expected char at idx=$diffIdx".blue,
+                    expectedChar.toString().blue + (" ( CharCodeHex = " + expectedChar.qToHex() + " )").light_gray,
+                    "actual char at idx=$diffIdx".light_green,
+                    actualChar.toString().light_green + (" ( CharCodeHex = " + actualChar.qToHex() + " )").light_gray
+                ),
+                QE.ShouldBeEqual
+            )
+        } else {
+            qThrowIt(msg, QE.ShouldBeEqual)
+        }
+    }
+}
+
+// CallChain[size=3] = qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+private inline fun qOkToTest(): Boolean {
+    return QMyTest.forceTestMode || qIsTesting || qIsDebugging
+}

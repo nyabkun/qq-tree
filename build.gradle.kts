@@ -24,12 +24,12 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
     id("maven-publish")
-//    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
+    
 }
 
 group = "com.nyabkun.qol"
 
-version = "v2023-05-21"
+version = "v2023-05-22-bc02"
 
 repositories {
     mavenCentral()
@@ -43,19 +43,6 @@ java {
     }
 }
 
-// https://www.youtube.com/watch?v=hSgPNbEcX98
-// https://github.com/search?q=%22ktlint+%7B%22+language%3Akotlin+path%3Abuild.gradle.kts&type=code
-// tasks.getByPath("build").dependsOn("ktlintFormat")
-// ktlint {
-//     // ignoreFailures.set(false)
-//     ignoreFailures.set(true)
-//     disabledRules.set(listOf("final-newline", "no-wildcard-imports"))
-//     reporters {
-//         reporter(ReporterType.PLAIN)
-//         reporter(ReporterType.CHECKSTYLE)
-//         reporter(ReporterType.SARIF)
-//     }
-// }
 
 sourceSets.main {
     java.srcDirs("src-split")
@@ -117,6 +104,7 @@ val testSingleRuntimeOnly: Configuration by configurations.getting {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
 }
 
 tasks {

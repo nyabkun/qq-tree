@@ -35,6 +35,7 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.name
 import kotlin.io.path.reader
+import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.reflect.KClass
@@ -1931,7 +1932,7 @@ private fun qBrackets(vararg keysAndValues: Any?): String {
 }
 
 // CallChain[size=8] = QOut <-[Ref]- QLogStyle <-[Ref]- QLogStyle.SRC_AND_STACK <-[Call]- QException ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-interface QOut {
+private interface QOut {
     // CallChain[size=10] = QOut.isAcceptColoredText <-[Propag]- QOut.CONSOLE <-[Call]- QMyLog.out <-[Ca ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     val isAcceptColoredText: Boolean
 
@@ -2103,10 +2104,10 @@ private fun String.qReplaceFirstIfNonEmptyStringGroup(@Language("RegExp") regex:
     }
 }
 
-// CallChain[size=10] = qBG_JUMP <-[Call]- QShColor.bg <-[Call]- String.qColorLine() <-[Call]- Strin ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=9] = qBG_JUMP <-[Call]- QShColor.bg <-[Propag]- QShColor.YELLOW <-[Call]- yellow < ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private const val qBG_JUMP = 10
 
-// CallChain[size=8] = qSTART <-[Call]- String.qColor() <-[Call]- yellow <-[Call]- QException.qToStr ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=9] = qSTART <-[Call]- QShColor.bg <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[ ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private const val qSTART = "\u001B["
 
 // CallChain[size=9] = qEND <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- yellow ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -2226,16 +2227,20 @@ enum class QShColor(val code: Int) {
     // CallChain[size=8] = QShColor.WHITE <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExcept ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     WHITE(97);
 
-    // CallChain[size=9] = QShColor.fg <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    // CallChain[size=8] = QShColor.fg <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QException ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     /** ANSI modifier string to apply the color to the text itself */
     val fg: String = "$qSTART${code}m"
 
-    // CallChain[size=9] = QShColor.bg <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    // CallChain[size=8] = QShColor.bg <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QException ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     /** ANSI modifier string to apply the color the text's background */
     val bg: String = "$qSTART${code + qBG_JUMP}m"
 
     companion object {
-        
+        // CallChain[size=8] = QShColor.random() <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExc ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+        fun random(seed: String, colors: Array<QShColor> = arrayOf(YELLOW, GREEN, BLUE, MAGENTA, CYAN)): QShColor {
+            val idx = seed.hashCode().rem(colors.size).absoluteValue
+            return colors[idx]
+        }
     }
 }
 

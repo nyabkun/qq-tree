@@ -14,6 +14,7 @@ package nyab.util
 
 import java.io.PrintStream
 import java.nio.file.Path
+import java.util.*
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -24,9 +25,32 @@ import nyab.match.QM
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
+// CallChain[size=12] = QE.throwIt() <-[Call]- qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Ca ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal fun QE.throwIt(msg: Any? = "", e: Throwable? = null, stackDepth: Int = 0): Nothing {
+    throw QException(
+        this,
+        if (msg is String && msg.isEmpty()) {
+            "No detailed error messages".light_gray
+        } else {
+            msg.qToLogString()
+        },
+        e, stackDepth = stackDepth + 1
+    )
+}
+
+// CallChain[size=13] = QE.throwItFile() <-[Call]- LineNumberReader.qFetchLinesAround() <-[Call]- Pa ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal fun QE.throwItFile(path: Path, e: Throwable? = null, stackDepth: Int = 0): Nothing {
+    throw QException(this, qBrackets("File", path.absolutePathString()), e, stackDepth = stackDepth + 1)
+}
+
 // CallChain[size=4] = QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun QE.throwItBrackets(vararg keysAndValues: Any?, e: Throwable? = null, stackDepth: Int = 0): Nothing {
     throw QException(this, qBrackets(*keysAndValues), e, stackDepth = stackDepth + 1)
+}
+
+// CallChain[size=11] = qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+internal fun qUnreachable(msg: Any? = ""): Nothing {
+    QE.Unreachable.throwIt(msg)
 }
 
 // CallChain[size=5] = QException <-[Call]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -82,27 +106,11 @@ internal class QException(
     }
 }
 
-// CallChain[size=11] = qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal fun qUnreachable(msg: Any? = ""): Nothing {
-    QE.Unreachable.throwIt(msg)
-}
-
-// CallChain[size=12] = QE.throwIt() <-[Call]- qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Ca ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal fun QE.throwIt(msg: Any? = "", e: Throwable? = null, stackDepth: Int = 0): Nothing {
-    throw QException(
-        this,
-        if (msg is String && msg.isEmpty()) {
-            "No detailed error messages".light_gray
-        } else {
-            msg.qToLogString()
-        },
-        e, stackDepth = stackDepth + 1
-    )
-}
-
-// CallChain[size=13] = QE.throwItFile() <-[Call]- LineNumberReader.qFetchLinesAround() <-[Call]- Pa ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-internal fun QE.throwItFile(path: Path, e: Throwable? = null, stackDepth: Int = 0): Nothing {
-    throw QException(this, qBrackets("File", path.absolutePathString()), e, stackDepth = stackDepth + 1)
+// CallChain[size=6] = Boolean.qaTrue() <-[Call]- String.qWithMinAndMaxLength() <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun Boolean.qaTrue(exceptionType: QE = QE.ShouldBeTrue, msg: Any? = "") {
+    if (!this) {
+        exceptionType.throwIt(stackDepth = 1, msg = msg)
+    }
 }
 
 // CallChain[size=12] = T?.qaNotNull() <-[Call]- qSrcFileAtFrame() <-[Call]- qSrcFileLinesAtFrame()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -122,12 +130,5 @@ internal fun Int?.qaNotZero(exceptionType: QE = QE.ShouldNotBeZero, msg: Any? = 
         exceptionType.throwIt(stackDepth = 1, msg = msg)
     } else {
         return this
-    }
-}
-
-// CallChain[size=6] = Boolean.qaTrue() <-[Call]- String.qWithMinAndMaxLength() <-[Call]- qSeparatorWithLabel() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun Boolean.qaTrue(exceptionType: QE = QE.ShouldBeTrue, msg: Any? = "") {
-    if (!this) {
-        exceptionType.throwIt(stackDepth = 1, msg = msg)
     }
 }

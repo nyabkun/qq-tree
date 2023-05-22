@@ -17,7 +17,7 @@ import java.nio.file.Path
 // This is a split-file version of the library, this file is not self-contained.
 
 // CallChain[size=10] = QOut <-[Ref]- QLogStyle <-[Ref]- QLogStyle.SRC_AND_STACK <-[Call]- QExceptio ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-interface QOut {
+internal interface QOut {
     // CallChain[size=12] = QOut.isAcceptColoredText <-[Propag]- QOut.CONSOLE <-[Call]- QMyLog.out <-[Ca ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     val isAcceptColoredText: Boolean
 
@@ -36,6 +36,11 @@ interface QOut {
 
         
     }
+}
+
+// CallChain[size=3] = QOut.separator() <-[Call]- qTest() <-[Call]- main()[Root]
+internal fun QOut.separator(start: String = "\n", end: String = "\n") {
+    this.println(qSeparator(start = start, end = end))
 }
 
 // CallChain[size=12] = QConsole <-[Call]- QOut.CONSOLE <-[Call]- QMyLog.out <-[Call]- QLogStyle <-[ ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -58,9 +63,4 @@ private class QConsole(override val isAcceptColoredText: Boolean) : QOut {
     override fun close() {
         // Do nothing
     }
-}
-
-// CallChain[size=3] = QOut.separator() <-[Call]- qTest() <-[Call]- main()[Root]
-internal fun QOut.separator(start: String = "\n", end: String = "\n") {
-    this.println(qSeparator(start = start, end = end))
 }

@@ -15,6 +15,7 @@ package nyab.util
 import java.lang.StackWalker.StackFrame
 import java.nio.charset.Charset
 import java.nio.file.Path
+import java.util.*
 import java.util.stream.Stream
 import kotlin.io.path.exists
 import kotlin.reflect.KClass
@@ -37,23 +38,34 @@ import nyab.match.and
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=6] = qStackFrames() <-[Call]- QException.stackFrames <-[Call]- QException.getStackTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal inline fun qStackFrames(
-        stackDepth: Int = 0,
-        size: Int = 1,
-        noinline filter: (StackFrame) -> Boolean = QE.STACK_FRAME_FILTER,
-): List<StackFrame> {
-    return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk { s: Stream<StackFrame> ->
-        s.asSequence().filter(filter).drop(stackDepth).take(size).toList()
+// CallChain[size=6] = KClass<*>.qFunctions() <-[Call]- qToStringRegistry <-[Call]- Any?.qToString() <-[Call]- Any?.qToLogString() <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun KClass<*>.qFunctions(matcher: QMFunc = QMFunc.DeclaredOnly and QMFunc.IncludeExtensionsInClass): List<KFunction<*>> {
+    val list = mutableListOf<KFunction<*>>()
+
+    var functions = if (matcher.declaredOnly) {
+        this.declaredFunctions
+    } else {
+        this.memberFunctions
     }
+
+    list += functions.filter { matcher.matches(it) }
+
+    if (matcher.includeExtensionsInClass) {
+        functions = if (matcher.declaredOnly) {
+            this.declaredMemberExtensionFunctions
+        } else {
+            this.memberExtensionFunctions
+        }
+
+        list += functions.filter { matcher.matches(it) }
+    }
+
+    return list
 }
 
-// CallChain[size=9] = qStackFrame() <-[Call]- qSrcFileLinesAtFrame() <-[Call]- qMySrcLinesAtFrame() ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal inline fun qStackFrame(
-        stackDepth: Int = 0,
-        noinline filter: (StackFrame) -> Boolean = QE.STACK_FRAME_FILTER,
-): StackFrame {
-    return qStackFrames(stackDepth, 1, filter)[0]
+// CallChain[size=15] = KClass<E>.qEnumValues() <-[Call]- QFlagSet.enumValues <-[Call]- QFlagSet.toE ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun <E : Enum<E>> KClass<E>.qEnumValues(): Array<E> {
+    return java.enumConstants as Array<E>
 }
 
 // CallChain[size=9] = qSrcFileAtFrame() <-[Call]- qSrcFileLinesAtFrame() <-[Call]- qMySrcLinesAtFra ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -85,34 +97,32 @@ internal fun qSrcFileAtFrame(frame: StackFrame, srcRoots: List<Path> = QMyPath.s
             .qaNotNull(QE.FileNotFound, qBrackets("FileName", frame.fileName, "SrcRoots", srcRoots))
 }
 
-// CallChain[size=15] = KClass<E>.qEnumValues() <-[Call]- QFlagSet.enumValues <-[Call]- QFlagSet.toE ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun <E : Enum<E>> KClass<E>.qEnumValues(): Array<E> {
-    return java.enumConstants as Array<E>
+// CallChain[size=6] = qStackFrames() <-[Call]- QException.stackFrames <-[Call]- QException.getStackTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal inline fun qStackFrames(
+        stackDepth: Int = 0,
+        size: Int = 1,
+        noinline filter: (StackFrame) -> Boolean = QE.STACK_FRAME_FILTER,
+): List<StackFrame> {
+    return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk { s: Stream<StackFrame> ->
+        s.asSequence().filter(filter).drop(stackDepth).take(size).toList()
+    }
 }
 
-// CallChain[size=6] = KClass<*>.qFunctions() <-[Call]- qToStringRegistry <-[Call]- Any?.qToString() <-[Call]- Any?.qToLogString() <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun KClass<*>.qFunctions(matcher: QMFunc = QMFunc.DeclaredOnly and QMFunc.IncludeExtensionsInClass): List<KFunction<*>> {
-    val list = mutableListOf<KFunction<*>>()
+// CallChain[size=9] = qStackFrame() <-[Call]- qSrcFileLinesAtFrame() <-[Call]- qMySrcLinesAtFrame() ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal inline fun qStackFrame(
+        stackDepth: Int = 0,
+        noinline filter: (StackFrame) -> Boolean = QE.STACK_FRAME_FILTER,
+): StackFrame {
+    return qStackFrames(stackDepth, 1, filter)[0]
+}
 
-    var functions = if (matcher.declaredOnly) {
-        this.declaredFunctions
+// CallChain[size=7] = KType.qToClass() <-[Call]- KType.qIsSuperclassOf() <-[Call]- qToStringRegistr ... y?.qToString() <-[Call]- Any?.qToLogString() <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal fun KType.qToClass(): KClass<*>? {
+    return if (this.classifier != null && this.classifier is KClass<*>) {
+        this.classifier as KClass<*>
     } else {
-        this.memberFunctions
+        null
     }
-
-    list += functions.filter { matcher.matches(it) }
-
-    if (matcher.includeExtensionsInClass) {
-        functions = if (matcher.declaredOnly) {
-            this.declaredMemberExtensionFunctions
-        } else {
-            this.memberExtensionFunctions
-        }
-
-        list += functions.filter { matcher.matches(it) }
-    }
-
-    return list
 }
 
 // CallChain[size=6] = KType.qIsSuperclassOf() <-[Call]- qToStringRegistry <-[Call]- Any?.qToString() <-[Call]- Any?.qToLogString() <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -128,14 +138,5 @@ internal fun KType.qIsSuperclassOf(cls: KClass<*>): Boolean {
     } catch (e: Throwable) {
         // Exception in thread "main" kotlin.reflect.jvm.internal.KotlinReflectionInternalError: Unresolved class: ~
         false
-    }
-}
-
-// CallChain[size=7] = KType.qToClass() <-[Call]- KType.qIsSuperclassOf() <-[Call]- qToStringRegistr ... y?.qToString() <-[Call]- Any?.qToLogString() <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun KType.qToClass(): KClass<*>? {
-    return if (this.classifier != null && this.classifier is KClass<*>) {
-        this.classifier as KClass<*>
-    } else {
-        null
     }
 }
