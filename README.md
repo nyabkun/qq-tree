@@ -126,7 +126,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.nyabkun:qq-tree:v2023-05-22-bc02'
+    implementation 'com.github.nyabkun:qq-tree:v2023-05-22'
 }
 ```
 
@@ -138,7 +138,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.nyabkun:qq-tree:v2023-05-22-bc02")
+    implementation("com.github.nyabkun:qq-tree:v2023-05-22")
 }
 ```
 
@@ -157,7 +157,7 @@ dependencies {
     <dependency>
         <groupId>com.github.nyabkun</groupId>
         <artifactId>qq-tree</artifactId>
-        <version>v2023-05-22-bc02</version>
+        <version>v2023-05-22</version>
     </dependency>
 </dependencies>
 ```
