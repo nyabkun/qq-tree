@@ -29,7 +29,7 @@ plugins {
 
 group = "com.nyabkun.qol"
 
-version = "v2023-05-22"
+version = "v2023-05-28"
 
 repositories {
     mavenCentral()
@@ -45,38 +45,37 @@ java {
 
 
 sourceSets.main {
-    java.srcDirs("src-split")
+                java.srcDirs("src-split")
 
-    resources.srcDirs("rsc")
-}
+                resources.srcDirs("rsc")
+            }
 
-sourceSets.test {
-    java.srcDirs("src-test-split")
+            sourceSets.test {
+                java.srcDirs("src-test-split")
 
-    resources.srcDirs("rsc-test")
-}
-
-sourceSets.register("example") {
-    java.srcDirs("src-example")
-
-    resources.srcDirs("rsc")
-
-    val jarFile = "$buildDir/libs/$qMavenArtifactId-$version.jar"
-    compileClasspath += files(jarFile)
-    runtimeClasspath += files(jarFile)
-}
-
-tasks.getByName("compileExampleKotlin").dependsOn("jar")
-
-val exampleImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.implementation.get())
-}
-
-val exampleRuntimeOnly: Configuration by configurations.getting {
-    extendsFrom(configurations.runtimeOnly.get())
-}
-
-sourceSets.register("single") {
+                resources.srcDirs("rsc-test")
+            }
+            
+            sourceSets.register("example") {
+                                java.srcDirs("src-example")
+            val jarFile = "$buildDir/libs/$qMavenArtifactId-$version.jar"
+            compileClasspath += files(jarFile)
+            runtimeClasspath += files(jarFile)
+                            
+                                resources.srcDirs("rsc")
+                            }
+                            
+                            tasks.getByName("compileExampleKotlin").dependsOn("jar")
+            
+                            val exampleImplementation: Configuration by configurations.getting {
+                                extendsFrom(configurations.implementation.get())
+                            }
+            
+                            val exampleRuntimeOnly: Configuration by configurations.getting {
+                                extendsFrom(configurations.runtimeOnly.get())
+                            }
+            
+            sourceSets.register("single") {
     java.srcDirs("src-single")
 }
 
@@ -112,13 +111,13 @@ tasks {
         enabled = true
         
         archiveBaseName.set(qMavenArtifactId)
-
+    
         from(sourceSets.main.get().output)
-
+    
         manifest {
             attributes(
-                    "Implementation-Title" to qMavenArtifactId,
-                    "Implementation-Version" to project.version
+                "Implementation-Title" to qMavenArtifactId,
+                "Implementation-Version" to project.version
             )
         }
     }
@@ -128,7 +127,7 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
     }
-
+    
     artifacts {
         archives(qSrcJar)
         archives(jar)

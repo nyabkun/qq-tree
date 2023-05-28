@@ -786,7 +786,7 @@ private annotation class QTest(val testOnlyThis: Boolean = false)
 // CallChain[size=3] = QTestHumanCheckRequired <-[Ref]- qTest() <-[Call]- main()[Root]
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
-private annotation class QTestHumanCheckRequired
+private annotation class QTestHumanCheckRequired(val testOnlyThis: Boolean = false)
 
 // CallChain[size=3] = QBeforeEach <-[Ref]- qTest() <-[Call]- main()[Root]
 @Retention(AnnotationRetention.RUNTIME)
@@ -809,13 +809,13 @@ private data class QTestResultElement(val method: Method, val cause: Throwable?)
 private val List<QTestResultElement>.allTestedMethods: String
     get() =
         "\n[${"Tested".light_blue}]\n" +
-            this.joinToString("\n") {
-                if (it.success) {
-                    it.method.qName().green
-                } else {
-                    it.method.qName().light_red
+                this.joinToString("\n") {
+                    if (it.success) {
+                        it.method.qName().green
+                    } else {
+                        it.method.qName().light_red
+                    }
                 }
-            }
 
 // CallChain[size=3] = QTestResult <-[Ref]- qTest() <-[Call]- main()[Root]
 private class QTestResult(val elements: List<QTestResultElement>, val time: Long) {
@@ -882,7 +882,6 @@ private class QTestResult(val elements: List<QTestResultElement>, val time: Long
                 }
             }
         } else {
-//            qLog(qBracket("Target Class", targetClass.name.light_blue), stackDepth = 1, color)
             out.println("${"✨".yellow} ${" Success ".green} ${"✨".yellow}".green + "\n")
             out.println(str)
             out.println(elements.allTestedMethods)
@@ -961,28 +960,28 @@ private fun qTest(
 
     targetMethodFilter: QMMethod =
         (QMMethod.annotation(QTest::class) or QMMethod.annotation("Test")) and
-            QMMethod.notAnnotation(QTestHumanCheckRequired::class) and
+                QMMethod.notAnnotation(QTestHumanCheckRequired::class) and
 //                QMMethod.notAnnotation(QIgnore::class) and
-            QMMethod.DeclaredOnly and
-            QMMethod.NoParams and
-            QMMethod.nameNotExact("main"),
+                QMMethod.DeclaredOnly and
+                QMMethod.NoParams and
+                QMMethod.nameNotExact("main"),
 
     beforeMethodFilter: QMMethod =
         (
-            QMMethod.annotation(QBeforeEach::class) or QMMethod.annotation("BeforeTest")
-                or QMMethod.annotation("BeforeEach")
-                or QMMethod.annotation("BeforeMethod")
-            )
-            and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
+                QMMethod.annotation(QBeforeEach::class) or QMMethod.annotation("BeforeTest")
+                        or QMMethod.annotation("BeforeEach")
+                        or QMMethod.annotation("BeforeMethod")
+                )
+                and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
             "main"
         ),
 
     afterMethodFilter: QMMethod =
         (
-            QMMethod.annotation(QAfterEach::class) or QMMethod.annotation("AfterTest")
-                or QMMethod.annotation("AfterEach")
-                or QMMethod.annotation("AfterMethod")
-            ) and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
+                QMMethod.annotation(QAfterEach::class) or QMMethod.annotation("AfterTest")
+                        or QMMethod.annotation("AfterEach")
+                        or QMMethod.annotation("AfterMethod")
+                ) and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
             "main"
         ),
 
@@ -998,9 +997,11 @@ private fun qTest(
 
     val methodsToTestImmediately = targetClasses.flatMap { cls ->
         cls.qMethods().filter { method ->
-            (QMMethod.DeclaredOnly and QMMethod.annotation(QTest::class) { anno ->
-                anno.testOnlyThis
-            }).matches(method)
+            (QMMethod.DeclaredOnly and (
+                    QMMethod.annotation(QTest::class) { it.testOnlyThis } or
+                            QMMethod.annotation(QTestHumanCheckRequired::class) { it.testOnlyThis })).matches(method)
+        }.sortedBy {
+            it.name // TODO sort by line number
         }
     }
 
@@ -1058,7 +1059,7 @@ private fun qFailMsg(actual: Any?, msg: String = "is not equals to", expected: A
     val actualStr = actual.qToLogString() + " " + "(actual)".light_green
     val expectedStr = expected.qToLogString() + " " + "(expected)".blue
     return "${QMyMark.WARN} ${actualStr.qWithNewLineSurround(onlyIf = QOnlyIfStr.Always)}$cMsg${
-    expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
+        expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
     }"
 }
 
@@ -1492,8 +1493,8 @@ private enum class QFetchStart {
 
 // CallChain[size=11] = QFetchRuleA <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut() <-[ ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private abstract class QFetchRuleA(
-        override val numLinesBeforeTargetLine: Int = 10,
-        override val numLinesAfterTargetLine: Int = 10,
+    override val numLinesBeforeTargetLine: Int = 10,
+    override val numLinesAfterTargetLine: Int = 10,
 ) : QFetchRule
 
 // CallChain[size=10] = QFetchRule <-[Ref]- QSrcCut.QSrcCut() <-[Call]- qLogStackFrames() <-[Call]-  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -1505,31 +1506,31 @@ private interface QFetchRule {
 
     // CallChain[size=11] = QFetchRule.fetchStartCheck() <-[Propag]- QFetchRule.SINGLE_LINE <-[Call]- QS ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     fun fetchStartCheck(
-            line: String,
-            currentLineNumber: Int,
-            targetLine: String,
-            targetLineNumber: Int,
-            context: MutableSet<String>,
+        line: String,
+        currentLineNumber: Int,
+        targetLine: String,
+        targetLineNumber: Int,
+        context: MutableSet<String>,
     ): QFetchStart
 
     // CallChain[size=11] = QFetchRule.fetchEndCheck() <-[Propag]- QFetchRule.SINGLE_LINE <-[Call]- QSrc ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     fun fetchEndCheck(
-            line: String,
-            currentLineNumber: Int,
-            targetLine: String,
-            targetLineNumber: Int,
-            context: MutableSet<String>,
+        line: String,
+        currentLineNumber: Int,
+        targetLine: String,
+        targetLineNumber: Int,
+        context: MutableSet<String>,
     ): QFetchEnd
 
     companion object {
         // CallChain[size=10] = QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut() <-[Call]- qLogStackFrames ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
         val SINGLE_LINE = object : QFetchRuleA(0, 0) {
             override fun fetchStartCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchStart = if (currentLineNumber == targetLineNumber) {
                 QFetchStart.START_FROM_THIS_LINE
             } else {
@@ -1537,11 +1538,11 @@ private interface QFetchRule {
             }
 
             override fun fetchEndCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchEnd = if (currentLineNumber == targetLineNumber) {
                 QFetchEnd.END_WITH_THIS_LINE
             } else {
@@ -1558,27 +1559,27 @@ private interface QFetchRule {
             // """
 
             override fun fetchStartCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchStart {
                 return QFetchStart.START_FROM_THIS_LINE
             }
 
             override fun fetchEndCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchEnd = if (currentLineNumber >= targetLineNumber) {
                 val nIndentThis = line.qCountLeftSpace()
                 val nIndentTarget = targetLine.qCountLeftSpace()
 
                 if (currentLineNumber == targetLineNumber && line.trimStart()
-                                .startsWith("\"\"\"") && line.qCountOccurrence("\"\"\"") == 1
+                        .startsWith("\"\"\"") && line.qCountOccurrence("\"\"\"") == 1
                 ) {
                     // """
                     // some text
@@ -1601,27 +1602,27 @@ private interface QFetchRule {
         // CallChain[size=9] = QFetchRule.SMART_FETCH <-[Call]- qLogStackFrames() <-[Call]- QException.mySrc ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
         val SMART_FETCH = object : QFetchRuleA(10, 10) {
             override fun fetchStartCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchStart {
                 val nIndentThis = line.qCountLeftSpace()
                 val nIndentTarget = targetLine.qCountLeftSpace()
                 val trimmed = line.trimStart()
 
                 return if (arrayOf(
-                                "\"\"\".",
-                                "}",
-                                ")",
-                                ".",
-                                ",",
-                                "?",
-                                "//",
-                                "/*",
-                                "*"
-                        ).any { trimmed.startsWith(it) }
+                        "\"\"\".",
+                        "}",
+                        ")",
+                        ".",
+                        ",",
+                        "?",
+                        "//",
+                        "/*",
+                        "*"
+                    ).any { trimmed.startsWith(it) }
                 ) {
                     QFetchStart.FETCH_THIS_LINE_AND_GO_TO_PREVIOUS_LINE
                 } else if (nIndentThis <= nIndentTarget) {
@@ -1632,17 +1633,17 @@ private interface QFetchRule {
             }
 
             override fun fetchEndCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchEnd = if (currentLineNumber >= targetLineNumber) {
                 val nIndentThis = line.qCountLeftSpace()
                 val nIndentTarget = targetLine.qCountLeftSpace()
 
                 if (currentLineNumber == targetLineNumber && line.trimStart()
-                                .startsWith("\"\"\"") && line.qCountOccurrence("\"\"\"") == 1
+                        .startsWith("\"\"\"") && line.qCountOccurrence("\"\"\"") == 1
                 ) {
                     // """               <<< targetLine
                     // some text
@@ -1672,8 +1673,8 @@ private interface QFetchRule {
 
 // CallChain[size=14] = LineNumberReader.qFetchLinesBetween() <-[Call]- LineNumberReader.qFetchTarge ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun LineNumberReader.qFetchLinesBetween(
-        lineNumberStartInclusive: Int,
-        lineNumberEndInclusive: Int,
+    lineNumberStartInclusive: Int,
+    lineNumberEndInclusive: Int,
 ): List<String> {
     var fetching = false
     val lines = mutableListOf<String>()
@@ -1699,12 +1700,12 @@ private fun LineNumberReader.qFetchLinesBetween(
 
 // CallChain[size=14] = TargetSurroundingLines <-[Ref]- LineNumberReader.qFetchTargetSurroundingLine ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private class TargetSurroundingLines(
-        val targetLineNumber: Int,
-        val startLineNumber: Int,
-        val endLineNumber: Int,
-        val targetLine: String,
-        val linesBeforeTargetLine: List<String>,
-        val linesAfterTargetLine: List<String>,
+    val targetLineNumber: Int,
+    val startLineNumber: Int,
+    val endLineNumber: Int,
+    val targetLine: String,
+    val linesBeforeTargetLine: List<String>,
+    val linesAfterTargetLine: List<String>,
 ) {
     // CallChain[size=13] = TargetSurroundingLines.linesBetween() <-[Call]- LineNumberReader.qFetchLines ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     fun linesBetween(lineNumberStartInclusive: Int, lineNumberEndInclusive: Int): List<String> {
@@ -1723,9 +1724,9 @@ private class TargetSurroundingLines(
 
 // CallChain[size=13] = LineNumberReader.qFetchTargetSurroundingLines() <-[Call]- LineNumberReader.q ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun LineNumberReader.qFetchTargetSurroundingLines(
-        targetLineNumber: Int,
-        numLinesBeforeTargetLine: Int = 10,
-        numLinesAfterTargetLine: Int = 10,
+    targetLineNumber: Int,
+    numLinesBeforeTargetLine: Int = 10,
+    numLinesAfterTargetLine: Int = 10,
 ): TargetSurroundingLines {
     val start = max(1, targetLineNumber - numLinesBeforeTargetLine)
     val end = targetLineNumber + numLinesAfterTargetLine
@@ -1733,27 +1734,27 @@ private fun LineNumberReader.qFetchTargetSurroundingLines(
     val lines = qFetchLinesBetween(start, end)
 
     return TargetSurroundingLines(
-            targetLineNumber = targetLineNumber,
-            startLineNumber = start,
-            endLineNumber = end,
-            targetLine = lines[targetLineNumber - start],
-            linesBeforeTargetLine = lines.subList(0, targetLineNumber - start),
-            linesAfterTargetLine = lines.subList(targetLineNumber - start + 1, lines.size)
+        targetLineNumber = targetLineNumber,
+        startLineNumber = start,
+        endLineNumber = end,
+        targetLine = lines[targetLineNumber - start],
+        linesBeforeTargetLine = lines.subList(0, targetLineNumber - start),
+        linesAfterTargetLine = lines.subList(targetLineNumber - start + 1, lines.size)
     )
 }
 
 // CallChain[size=12] = LineNumberReader.qFetchLinesAround() <-[Call]- Path.qFetchLinesAround() <-[C ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun LineNumberReader.qFetchLinesAround(
-        file: Path,
-        targetLineNumber: Int,
-        targetLine: String,
-        fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
-        lineSeparator: QLineSeparator = QLineSeparator.LF,
+    file: Path,
+    targetLineNumber: Int,
+    targetLine: String,
+    fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
+    lineSeparator: QLineSeparator = QLineSeparator.LF,
 ): String {
     val surroundingLines = qFetchTargetSurroundingLines(
-            targetLineNumber,
-            fetchRule.numLinesBeforeTargetLine,
-            fetchRule.numLinesAfterTargetLine
+        targetLineNumber,
+        fetchRule.numLinesBeforeTargetLine,
+        fetchRule.numLinesAfterTargetLine
     )
     val context: MutableSet<String> = mutableSetOf()
 
@@ -1772,11 +1773,11 @@ private fun LineNumberReader.qFetchLinesAround(
         val curLineNumber = targetLineNumber - i
 
         val check = fetchRule.fetchStartCheck(
-                line,
-                curLineNumber,
-                targetLine,
-                targetLineNumber,
-                context
+            line,
+            curLineNumber,
+            targetLine,
+            targetLineNumber,
+            context
         )
 
         when (check) {
@@ -1808,11 +1809,11 @@ private fun LineNumberReader.qFetchLinesAround(
         val curLineNumber = targetLineNumber + i
 
         val check = fetchRule.fetchEndCheck(
-                line,
-                curLineNumber,
-                targetLine,
-                targetLineNumber,
-                context
+            line,
+            curLineNumber,
+            targetLine,
+            targetLineNumber,
+            context
         )
 
         when (check) {
@@ -1849,19 +1850,19 @@ private fun LineNumberReader.qFetchLinesAround(
 
 // CallChain[size=12] = Path.qReader() <-[Call]- Path.qFetchLinesAround() <-[Call]- qSrcFileLinesAtF ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun Path.qReader(
-        charset: Charset = Charsets.UTF_8,
-        buffSize: Int = qBUFFER_SIZE,
-        opts: QFlag<QOpenOpt> = QFlag.none(),
+    charset: Charset = Charsets.UTF_8,
+    buffSize: Int = qBUFFER_SIZE,
+    opts: QFlag<QOpenOpt> = QFlag.none(),
 ): LineNumberReader {
     return LineNumberReader(reader(charset, *opts.toOptEnums()), buffSize)
 }
 
 // CallChain[size=11] = Path.qFetchLinesAround() <-[Call]- qSrcFileLinesAtFrame() <-[Call]- qMySrcLi ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun Path.qFetchLinesAround(
-        lineNumber: Int,
-        fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
-        charset: Charset = Charsets.UTF_8,
-        lineSeparator: QLineSeparator = this.qLineSeparator(charset),
+    lineNumber: Int,
+    fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
+    charset: Charset = Charsets.UTF_8,
+    lineSeparator: QLineSeparator = this.qLineSeparator(charset),
 ): String {
     val reader = qReader(charset)
 
@@ -1883,8 +1884,8 @@ private fun Path.qFetchLinesAround(
 
 // CallChain[size=12] = Path.qLineAt() <-[Call]- Path.qFetchLinesAround() <-[Call]- qSrcFileLinesAtF ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun Path.qLineAt(
-        lineNumber: Int,
-        charset: Charset = Charsets.UTF_8,
+    lineNumber: Int,
+    charset: Charset = Charsets.UTF_8,
 ): String {
     bufferedReader(charset).use { reader ->
         var n = 0
@@ -1959,13 +1960,13 @@ private fun Path.qFind(nameMatcher: QM, type: QFType = QFType.File, maxDepth: In
 
 // CallChain[size=10] = Path.qListByMatch() <-[Call]- QMyPath.src_root <-[Call]- qLogStackFrames() < ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun Path.qListByMatch(
-        nameMatch: QM,
-        type: QFType = QFType.File,
-        maxDepth: Int = 1,
-        followSymLink: Boolean = false,
+    nameMatch: QM,
+    type: QFType = QFType.File,
+    maxDepth: Int = 1,
+    followSymLink: Boolean = false,
 ): List<Path> {
     return qList(
-            type, maxDepth = maxDepth, followSymLink = followSymLink
+        type, maxDepth = maxDepth, followSymLink = followSymLink
     ) {
         it.name.qMatches(nameMatch)
     }
@@ -1973,32 +1974,32 @@ private fun Path.qListByMatch(
 
 // CallChain[size=14] = Path.qList() <-[Call]- Path.qFind() <-[Call]- Collection<Path>.qFind() <-[Ca ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun Path.qList(
-        type: QFType = QFType.File,
-        maxDepth: Int = 1,
-        followSymLink: Boolean = false,
-        sortWith: ((Path, Path) -> Int)? = Path::compareTo,
-        filter: (Path) -> Boolean = { true },
-        // TODO https://stackoverflow.com/a/66996768/5570400
-        // errorContinue: Boolean = true
+    type: QFType = QFType.File,
+    maxDepth: Int = 1,
+    followSymLink: Boolean = false,
+    sortWith: ((Path, Path) -> Int)? = Path::compareTo,
+    filter: (Path) -> Boolean = { true },
+    // TODO https://stackoverflow.com/a/66996768/5570400
+    // errorContinue: Boolean = true
 ): List<Path> {
     return qSeq(
-            type = type,
-            maxDepth = maxDepth,
-            followSymLink = followSymLink,
-            sortWith = sortWith,
-            filter = filter
+        type = type,
+        maxDepth = maxDepth,
+        followSymLink = followSymLink,
+        sortWith = sortWith,
+        filter = filter
     ).toList()
 }
 
 // CallChain[size=15] = Path.qSeq() <-[Call]- Path.qList() <-[Call]- Path.qFind() <-[Call]- Collecti ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun Path.qSeq(
-        type: QFType = QFType.File,
-        maxDepth: Int = 1,
-        followSymLink: Boolean = false,
-        sortWith: ((Path, Path) -> Int)? = Path::compareTo,
-        filter: (Path) -> Boolean = { true },
-        // TODO https://stackoverflow.com/a/66996768/5570400
-        // errorContinue: Boolean = true
+    type: QFType = QFType.File,
+    maxDepth: Int = 1,
+    followSymLink: Boolean = false,
+    sortWith: ((Path, Path) -> Int)? = Path::compareTo,
+    filter: (Path) -> Boolean = { true },
+    // TODO https://stackoverflow.com/a/66996768/5570400
+    // errorContinue: Boolean = true
 ): Sequence<Path> {
     if (!this.isDirectory())
         return emptySequence()

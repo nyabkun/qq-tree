@@ -72,7 +72,7 @@ internal annotation class QTest(val testOnlyThis: Boolean = false)
 // CallChain[size=3] = QTestHumanCheckRequired <-[Ref]- qTest() <-[Call]- main()[Root]
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
-internal annotation class QTestHumanCheckRequired
+internal annotation class QTestHumanCheckRequired(val testOnlyThis: Boolean = false)
 
 // CallChain[size=3] = QBeforeEach <-[Ref]- qTest() <-[Call]- main()[Root]
 @Retention(AnnotationRetention.RUNTIME)
@@ -95,13 +95,13 @@ internal data class QTestResultElement(val method: Method, val cause: Throwable?
 internal val List<QTestResultElement>.allTestedMethods: String
     get() =
         "\n[${"Tested".light_blue}]\n" +
-            this.joinToString("\n") {
-                if (it.success) {
-                    it.method.qName().green
-                } else {
-                    it.method.qName().light_red
+                this.joinToString("\n") {
+                    if (it.success) {
+                        it.method.qName().green
+                    } else {
+                        it.method.qName().light_red
+                    }
                 }
-            }
 
 // CallChain[size=3] = QTestResult <-[Ref]- qTest() <-[Call]- main()[Root]
 internal class QTestResult(val elements: List<QTestResultElement>, val time: Long) {
@@ -168,7 +168,6 @@ internal class QTestResult(val elements: List<QTestResultElement>, val time: Lon
                 }
             }
         } else {
-//            qLog(qBracket("Target Class", targetClass.name.light_blue), stackDepth = 1, color)
             out.println("${"✨".yellow} ${" Success ".green} ${"✨".yellow}".green + "\n")
             out.println(str)
             out.println(elements.allTestedMethods)
@@ -247,28 +246,28 @@ internal fun qTest(
 
     targetMethodFilter: QMMethod =
         (QMMethod.annotation(QTest::class) or QMMethod.annotation("Test")) and
-            QMMethod.notAnnotation(QTestHumanCheckRequired::class) and
+                QMMethod.notAnnotation(QTestHumanCheckRequired::class) and
 //                QMMethod.notAnnotation(QIgnore::class) and
-            QMMethod.DeclaredOnly and
-            QMMethod.NoParams and
-            QMMethod.nameNotExact("main"),
+                QMMethod.DeclaredOnly and
+                QMMethod.NoParams and
+                QMMethod.nameNotExact("main"),
 
     beforeMethodFilter: QMMethod =
         (
-            QMMethod.annotation(QBeforeEach::class) or QMMethod.annotation("BeforeTest")
-                or QMMethod.annotation("BeforeEach")
-                or QMMethod.annotation("BeforeMethod")
-            )
-            and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
+                QMMethod.annotation(QBeforeEach::class) or QMMethod.annotation("BeforeTest")
+                        or QMMethod.annotation("BeforeEach")
+                        or QMMethod.annotation("BeforeMethod")
+                )
+                and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
             "main"
         ),
 
     afterMethodFilter: QMMethod =
         (
-            QMMethod.annotation(QAfterEach::class) or QMMethod.annotation("AfterTest")
-                or QMMethod.annotation("AfterEach")
-                or QMMethod.annotation("AfterMethod")
-            ) and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
+                QMMethod.annotation(QAfterEach::class) or QMMethod.annotation("AfterTest")
+                        or QMMethod.annotation("AfterEach")
+                        or QMMethod.annotation("AfterMethod")
+                ) and QMMethod.DeclaredOnly and QMMethod.NoParams and QMMethod.nameNotExact(
             "main"
         ),
 
@@ -284,9 +283,11 @@ internal fun qTest(
 
     val methodsToTestImmediately = targetClasses.flatMap { cls ->
         cls.qMethods().filter { method ->
-            (QMMethod.DeclaredOnly and QMMethod.annotation(QTest::class) { anno ->
-                anno.testOnlyThis
-            }).matches(method)
+            (QMMethod.DeclaredOnly and (
+                    QMMethod.annotation(QTest::class) { it.testOnlyThis } or
+                            QMMethod.annotation(QTestHumanCheckRequired::class) { it.testOnlyThis })).matches(method)
+        }.sortedBy {
+            it.name // TODO sort by line number
         }
     }
 
@@ -344,7 +345,7 @@ private fun qFailMsg(actual: Any?, msg: String = "is not equals to", expected: A
     val actualStr = actual.qToLogString() + " " + "(actual)".light_green
     val expectedStr = expected.qToLogString() + " " + "(expected)".blue
     return "${QMyMark.WARN} ${actualStr.qWithNewLineSurround(onlyIf = QOnlyIfStr.Always)}$cMsg${
-    expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
+        expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
     }"
 }
 

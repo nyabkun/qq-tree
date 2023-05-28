@@ -139,8 +139,8 @@ internal enum class QFetchStart {
 
 // CallChain[size=9] = QFetchRuleA <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut() <-[C ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal abstract class QFetchRuleA(
-        override val numLinesBeforeTargetLine: Int = 10,
-        override val numLinesAfterTargetLine: Int = 10,
+    override val numLinesBeforeTargetLine: Int = 10,
+    override val numLinesAfterTargetLine: Int = 10,
 ) : QFetchRule
 
 // CallChain[size=8] = QFetchRule <-[Ref]- QSrcCut.QSrcCut() <-[Call]- qLogStackFrames() <-[Call]- Q ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -152,31 +152,31 @@ internal interface QFetchRule {
 
     // CallChain[size=9] = QFetchRule.fetchStartCheck() <-[Propag]- QFetchRule.SINGLE_LINE <-[Call]- QSr ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     fun fetchStartCheck(
-            line: String,
-            currentLineNumber: Int,
-            targetLine: String,
-            targetLineNumber: Int,
-            context: MutableSet<String>,
+        line: String,
+        currentLineNumber: Int,
+        targetLine: String,
+        targetLineNumber: Int,
+        context: MutableSet<String>,
     ): QFetchStart
 
     // CallChain[size=9] = QFetchRule.fetchEndCheck() <-[Propag]- QFetchRule.SINGLE_LINE <-[Call]- QSrcC ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     fun fetchEndCheck(
-            line: String,
-            currentLineNumber: Int,
-            targetLine: String,
-            targetLineNumber: Int,
-            context: MutableSet<String>,
+        line: String,
+        currentLineNumber: Int,
+        targetLine: String,
+        targetLineNumber: Int,
+        context: MutableSet<String>,
     ): QFetchEnd
 
     companion object {
         // CallChain[size=8] = QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut() <-[Call]- qLogStackFrames( ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
         val SINGLE_LINE = object : QFetchRuleA(0, 0) {
             override fun fetchStartCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchStart = if (currentLineNumber == targetLineNumber) {
                 QFetchStart.START_FROM_THIS_LINE
             } else {
@@ -184,11 +184,11 @@ internal interface QFetchRule {
             }
 
             override fun fetchEndCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchEnd = if (currentLineNumber == targetLineNumber) {
                 QFetchEnd.END_WITH_THIS_LINE
             } else {
@@ -199,27 +199,27 @@ internal interface QFetchRule {
         // CallChain[size=7] = QFetchRule.SMART_FETCH <-[Call]- qLogStackFrames() <-[Call]- QException.mySrc ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
         val SMART_FETCH = object : QFetchRuleA(10, 10) {
             override fun fetchStartCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchStart {
                 val nIndentThis = line.qCountLeftSpace()
                 val nIndentTarget = targetLine.qCountLeftSpace()
                 val trimmed = line.trimStart()
 
                 return if (arrayOf(
-                                "\"\"\".",
-                                "}",
-                                ")",
-                                ".",
-                                ",",
-                                "?",
-                                "//",
-                                "/*",
-                                "*"
-                        ).any { trimmed.startsWith(it) }
+                        "\"\"\".",
+                        "}",
+                        ")",
+                        ".",
+                        ",",
+                        "?",
+                        "//",
+                        "/*",
+                        "*"
+                    ).any { trimmed.startsWith(it) }
                 ) {
                     QFetchStart.FETCH_THIS_LINE_AND_GO_TO_PREVIOUS_LINE
                 } else if (nIndentThis <= nIndentTarget) {
@@ -230,17 +230,17 @@ internal interface QFetchRule {
             }
 
             override fun fetchEndCheck(
-                    line: String,
-                    currentLineNumber: Int,
-                    targetLine: String,
-                    targetLineNumber: Int,
-                    context: MutableSet<String>,
+                line: String,
+                currentLineNumber: Int,
+                targetLine: String,
+                targetLineNumber: Int,
+                context: MutableSet<String>,
             ): QFetchEnd = if (currentLineNumber >= targetLineNumber) {
                 val nIndentThis = line.qCountLeftSpace()
                 val nIndentTarget = targetLine.qCountLeftSpace()
 
                 if (currentLineNumber == targetLineNumber && line.trimStart()
-                                .startsWith("\"\"\"") && line.qCountOccurrence("\"\"\"") == 1
+                        .startsWith("\"\"\"") && line.qCountOccurrence("\"\"\"") == 1
                 ) {
                     // """               <<< targetLine
                     // some text
@@ -270,8 +270,8 @@ internal interface QFetchRule {
 
 // CallChain[size=12] = LineNumberReader.qFetchLinesBetween() <-[Call]- LineNumberReader.qFetchTarge ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private fun LineNumberReader.qFetchLinesBetween(
-        lineNumberStartInclusive: Int,
-        lineNumberEndInclusive: Int,
+    lineNumberStartInclusive: Int,
+    lineNumberEndInclusive: Int,
 ): List<String> {
     var fetching = false
     val lines = mutableListOf<String>()
@@ -297,12 +297,12 @@ private fun LineNumberReader.qFetchLinesBetween(
 
 // CallChain[size=12] = TargetSurroundingLines <-[Ref]- LineNumberReader.qFetchTargetSurroundingLine ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal class TargetSurroundingLines(
-        val targetLineNumber: Int,
-        val startLineNumber: Int,
-        val endLineNumber: Int,
-        val targetLine: String,
-        val linesBeforeTargetLine: List<String>,
-        val linesAfterTargetLine: List<String>,
+    val targetLineNumber: Int,
+    val startLineNumber: Int,
+    val endLineNumber: Int,
+    val targetLine: String,
+    val linesBeforeTargetLine: List<String>,
+    val linesAfterTargetLine: List<String>,
 ) {
     // CallChain[size=11] = TargetSurroundingLines.linesBetween() <-[Call]- LineNumberReader.qFetchLines ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     fun linesBetween(lineNumberStartInclusive: Int, lineNumberEndInclusive: Int): List<String> {
@@ -321,9 +321,9 @@ internal class TargetSurroundingLines(
 
 // CallChain[size=11] = LineNumberReader.qFetchTargetSurroundingLines() <-[Call]- LineNumberReader.q ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private fun LineNumberReader.qFetchTargetSurroundingLines(
-        targetLineNumber: Int,
-        numLinesBeforeTargetLine: Int = 10,
-        numLinesAfterTargetLine: Int = 10,
+    targetLineNumber: Int,
+    numLinesBeforeTargetLine: Int = 10,
+    numLinesAfterTargetLine: Int = 10,
 ): TargetSurroundingLines {
     val start = max(1, targetLineNumber - numLinesBeforeTargetLine)
     val end = targetLineNumber + numLinesAfterTargetLine
@@ -331,27 +331,27 @@ private fun LineNumberReader.qFetchTargetSurroundingLines(
     val lines = qFetchLinesBetween(start, end)
 
     return TargetSurroundingLines(
-            targetLineNumber = targetLineNumber,
-            startLineNumber = start,
-            endLineNumber = end,
-            targetLine = lines[targetLineNumber - start],
-            linesBeforeTargetLine = lines.subList(0, targetLineNumber - start),
-            linesAfterTargetLine = lines.subList(targetLineNumber - start + 1, lines.size)
+        targetLineNumber = targetLineNumber,
+        startLineNumber = start,
+        endLineNumber = end,
+        targetLine = lines[targetLineNumber - start],
+        linesBeforeTargetLine = lines.subList(0, targetLineNumber - start),
+        linesAfterTargetLine = lines.subList(targetLineNumber - start + 1, lines.size)
     )
 }
 
 // CallChain[size=10] = LineNumberReader.qFetchLinesAround() <-[Call]- Path.qFetchLinesAround() <-[C ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private fun LineNumberReader.qFetchLinesAround(
-        file: Path,
-        targetLineNumber: Int,
-        targetLine: String,
-        fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
-        lineSeparator: QLineSeparator = QLineSeparator.LF,
+    file: Path,
+    targetLineNumber: Int,
+    targetLine: String,
+    fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
+    lineSeparator: QLineSeparator = QLineSeparator.LF,
 ): String {
     val surroundingLines = qFetchTargetSurroundingLines(
-            targetLineNumber,
-            fetchRule.numLinesBeforeTargetLine,
-            fetchRule.numLinesAfterTargetLine
+        targetLineNumber,
+        fetchRule.numLinesBeforeTargetLine,
+        fetchRule.numLinesAfterTargetLine
     )
     val context: MutableSet<String> = mutableSetOf()
 
@@ -370,11 +370,11 @@ private fun LineNumberReader.qFetchLinesAround(
         val curLineNumber = targetLineNumber - i
 
         val check = fetchRule.fetchStartCheck(
-                line,
-                curLineNumber,
-                targetLine,
-                targetLineNumber,
-                context
+            line,
+            curLineNumber,
+            targetLine,
+            targetLineNumber,
+            context
         )
 
         when (check) {
@@ -406,11 +406,11 @@ private fun LineNumberReader.qFetchLinesAround(
         val curLineNumber = targetLineNumber + i
 
         val check = fetchRule.fetchEndCheck(
-                line,
-                curLineNumber,
-                targetLine,
-                targetLineNumber,
-                context
+            line,
+            curLineNumber,
+            targetLine,
+            targetLineNumber,
+            context
         )
 
         when (check) {
@@ -447,19 +447,19 @@ private fun LineNumberReader.qFetchLinesAround(
 
 // CallChain[size=10] = Path.qReader() <-[Call]- Path.qFetchLinesAround() <-[Call]- qSrcFileLinesAtF ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun Path.qReader(
-        charset: Charset = Charsets.UTF_8,
-        buffSize: Int = qBUFFER_SIZE,
-        opts: QFlag<QOpenOpt> = QFlag.none(),
+    charset: Charset = Charsets.UTF_8,
+    buffSize: Int = qBUFFER_SIZE,
+    opts: QFlag<QOpenOpt> = QFlag.none(),
 ): LineNumberReader {
     return LineNumberReader(reader(charset, *opts.toOptEnums()), buffSize)
 }
 
 // CallChain[size=9] = Path.qFetchLinesAround() <-[Call]- qSrcFileLinesAtFrame() <-[Call]- qMySrcLin ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun Path.qFetchLinesAround(
-        lineNumber: Int,
-        fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
-        charset: Charset = Charsets.UTF_8,
-        lineSeparator: QLineSeparator = this.qLineSeparator(charset),
+    lineNumber: Int,
+    fetchRule: QFetchRule = QFetchRule.SMART_FETCH,
+    charset: Charset = Charsets.UTF_8,
+    lineSeparator: QLineSeparator = this.qLineSeparator(charset),
 ): String {
     val reader = qReader(charset)
 
@@ -481,8 +481,8 @@ internal fun Path.qFetchLinesAround(
 
 // CallChain[size=10] = Path.qLineAt() <-[Call]- Path.qFetchLinesAround() <-[Call]- qSrcFileLinesAtF ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun Path.qLineAt(
-        lineNumber: Int,
-        charset: Charset = Charsets.UTF_8,
+    lineNumber: Int,
+    charset: Charset = Charsets.UTF_8,
 ): String {
     bufferedReader(charset).use { reader ->
         var n = 0
@@ -557,13 +557,13 @@ internal fun Path.qFind(nameMatcher: QM, type: QFType = QFType.File, maxDepth: I
 
 // CallChain[size=8] = Path.qListByMatch() <-[Call]- QMyPath.src_root <-[Call]- qLogStackFrames() <- ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun Path.qListByMatch(
-        nameMatch: QM,
-        type: QFType = QFType.File,
-        maxDepth: Int = 1,
-        followSymLink: Boolean = false,
+    nameMatch: QM,
+    type: QFType = QFType.File,
+    maxDepth: Int = 1,
+    followSymLink: Boolean = false,
 ): List<Path> {
     return qList(
-            type, maxDepth = maxDepth, followSymLink = followSymLink
+        type, maxDepth = maxDepth, followSymLink = followSymLink
     ) {
         it.name.qMatches(nameMatch)
     }
@@ -571,32 +571,32 @@ internal fun Path.qListByMatch(
 
 // CallChain[size=12] = Path.qList() <-[Call]- Path.qFind() <-[Call]- Collection<Path>.qFind() <-[Ca ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun Path.qList(
-        type: QFType = QFType.File,
-        maxDepth: Int = 1,
-        followSymLink: Boolean = false,
-        sortWith: ((Path, Path) -> Int)? = Path::compareTo,
-        filter: (Path) -> Boolean = { true },
-        // TODO https://stackoverflow.com/a/66996768/5570400
-        // errorContinue: Boolean = true
+    type: QFType = QFType.File,
+    maxDepth: Int = 1,
+    followSymLink: Boolean = false,
+    sortWith: ((Path, Path) -> Int)? = Path::compareTo,
+    filter: (Path) -> Boolean = { true },
+    // TODO https://stackoverflow.com/a/66996768/5570400
+    // errorContinue: Boolean = true
 ): List<Path> {
     return qSeq(
-            type = type,
-            maxDepth = maxDepth,
-            followSymLink = followSymLink,
-            sortWith = sortWith,
-            filter = filter
+        type = type,
+        maxDepth = maxDepth,
+        followSymLink = followSymLink,
+        sortWith = sortWith,
+        filter = filter
     ).toList()
 }
 
 // CallChain[size=13] = Path.qSeq() <-[Call]- Path.qList() <-[Call]- Path.qFind() <-[Call]- Collecti ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun Path.qSeq(
-        type: QFType = QFType.File,
-        maxDepth: Int = 1,
-        followSymLink: Boolean = false,
-        sortWith: ((Path, Path) -> Int)? = Path::compareTo,
-        filter: (Path) -> Boolean = { true },
-        // TODO https://stackoverflow.com/a/66996768/5570400
-        // errorContinue: Boolean = true
+    type: QFType = QFType.File,
+    maxDepth: Int = 1,
+    followSymLink: Boolean = false,
+    sortWith: ((Path, Path) -> Int)? = Path::compareTo,
+    filter: (Path) -> Boolean = { true },
+    // TODO https://stackoverflow.com/a/66996768/5570400
+    // errorContinue: Boolean = true
 ): Sequence<Path> {
     if (!this.isDirectory())
         return emptySequence()

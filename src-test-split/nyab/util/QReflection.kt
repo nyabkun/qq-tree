@@ -13,7 +13,6 @@
 package nyab.util
 
 import java.lang.StackWalker.StackFrame
-import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.nio.charset.Charset
 import java.nio.file.Path
