@@ -8,14 +8,12 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-@file:Suppress("UNUSED_VARIABLE")
-
 package tree
 
 import nyab.util.QLazyTreeNode
-import nyab.util.QTreeNode
 import nyab.util.QSearchAlgo
 import nyab.util.QShColor
+import nyab.util.QTreeNode
 import nyab.util.QTreeStyle
 import nyab.util.add
 import nyab.util.descendantsList
@@ -26,8 +24,21 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
+import kotlin.streams.asSequence
 
 fun main() {
+    intTree()
+
+    println()
+
+    textTree()
+
+    println()
+
+    fileTree()
+}
+
+fun intTree() {
     // First, you have to create the root node.
     val root = QTreeNode(0)
 
@@ -39,11 +50,11 @@ fun main() {
     val node6 = node4 add 6
     val node7 = node2 add 7
 
-    val unicodeTree = root.tree(color = QShColor.GREEN, style = QTreeStyle.UNICODE)
+    val unicodeTree = root.tree(color = QShColor.Green, style = QTreeStyle.UNICODE)
 
     println(unicodeTree)
 
-    val asciiTree = root.tree(color = QShColor.BLUE, style = QTreeStyle.ASCII)
+    val asciiTree = root.tree(color = QShColor.Blue, style = QTreeStyle.ASCII)
 
     println(asciiTree)
 
@@ -56,9 +67,9 @@ fun main() {
     val breadthFirstResult = root.descendantsList(QSearchAlgo.BreadthFirst).toString()
 
     println("BreadthFirst : $breadthFirstResult") // [0, 1, 2, 3, 4, 7, 5, 6]
+}
 
-    println()
-
+fun textTree() {
     // node can store anything
     val rootA = QTreeNode("A")
     val nodeB = rootA add "B"
@@ -68,30 +79,38 @@ fun main() {
     val nodeF = nodeE add "F"
     val nodeG = nodeC add "G"
 
-    val textTree = rootA.tree(color = QShColor.CYAN, style = QTreeStyle.UNICODE)
+    val textTree = rootA.tree(color = QShColor.Cyan, style = QTreeStyle.UNICODE)
 
     println(textTree)
+}
 
+fun fileTree() {
     // You can implement QLazyNode for more complicated situations.
     class QFileNode(override val value: Path) : QLazyTreeNode<Path> {
         override fun hasChildNodesToFill(): Boolean {
             return value.isDirectory()
         }
 
-        override fun fillChildNodes(): List<QFileNode> = Files.walk(value, 1).filter {
-            it != value
-        }.map {
-            QFileNode(it)
-        }.toList()
+        override fun fillChildNodes(): List<QFileNode> {
+            return Files.walk(value, 1).asSequence().filter {
+                it != value
+            }.sortedBy {
+                it.name
+            }.sortedBy {
+                !it.isDirectory()
+            }.map {
+                QFileNode(it)
+            }.toList()
+        }
 
         override fun toTreeNodeString(): String {
-            return value.name
+            return if (value.isDirectory()) "📁" + value.name else value.name
         }
     }
 
-    val rootDir = Paths.get("rsc-test/root-dir").toAbsolutePath()
+    val rootDir = Paths.get("src-split").toAbsolutePath()
 
-    val fileTree = QFileNode(rootDir).fillTree(maxDepth = 2).tree()
+    val fileTree = QFileNode(rootDir).fillTree(maxDepth = 3).tree()
 
     println(fileTree)
 }

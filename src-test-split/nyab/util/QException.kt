@@ -14,18 +14,18 @@ package nyab.util
 
 import java.io.PrintStream
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import nyab.conf.QE
 import nyab.conf.QMyMark
+import nyab.conf.qSTACK_FRAME_FILTER
 import nyab.match.QM
 
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=12] = QE.throwIt() <-[Call]- qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Ca ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=12] = QE.throwIt() <-[Call]- qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Ca ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun QE.throwIt(msg: Any? = "", e: Throwable? = null, stackDepth: Int = 0): Nothing {
     throw QException(
         this,
@@ -38,54 +38,54 @@ internal fun QE.throwIt(msg: Any? = "", e: Throwable? = null, stackDepth: Int = 
     )
 }
 
-// CallChain[size=13] = QE.throwItFile() <-[Call]- LineNumberReader.qFetchLinesAround() <-[Call]- Pa ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=13] = QE.throwItFile() <-[Call]- LineNumberReader.qFetchLinesAround() <-[Call]- Pa ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun QE.throwItFile(path: Path, e: Throwable? = null, stackDepth: Int = 0): Nothing {
     throw QException(this, qBrackets("File", path.absolutePathString()), e, stackDepth = stackDepth + 1)
 }
 
-// CallChain[size=4] = QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=4] = QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun QE.throwItBrackets(vararg keysAndValues: Any?, e: Throwable? = null, stackDepth: Int = 0): Nothing {
     throw QException(this, qBrackets(*keysAndValues), e, stackDepth = stackDepth + 1)
 }
 
-// CallChain[size=11] = qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=11] = qUnreachable() <-[Call]- QFetchRule.SINGLE_LINE <-[Call]- QSrcCut.QSrcCut()  ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun qUnreachable(msg: Any? = ""): Nothing {
     QE.Unreachable.throwIt(msg)
 }
 
-// CallChain[size=5] = QException <-[Call]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=5] = QException <-[Call]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal class QException(
     val type: QE = QE.Other,
-    msg: String = QMyMark.WARN,
+    msg: String = QMyMark.warn,
     e: Throwable? = null,
     val stackDepth: Int = 0,
     stackSize: Int = 20,
-    stackFilter: (StackWalker.StackFrame) -> Boolean = QE.STACK_FRAME_FILTER,
+    stackFilter: (StackWalker.StackFrame) -> Boolean = qSTACK_FRAME_FILTER,
     private val srcCut: QSrcCut = QSrcCut.MULTILINE_NOCUT,
 ) : RuntimeException(msg, e) {
 
-    // CallChain[size=6] = QException.printStackTrace() <-[Propag]- QException.QException() <-[Ref]- QE. ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=6] = QException.printStackTrace() <-[Propag]- QException.QException() <-[Ref]- QE. ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     override fun printStackTrace(s: PrintStream) {
         s.println("\n" + qToString() + "\n" + mySrcAndStack)
     }
 
-    // CallChain[size=7] = QException.stackFrames <-[Call]- QException.getStackTrace() <-[Propag]- QExce ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=7] = QException.stackFrames <-[Call]- QException.getStackTrace() <-[Propag]- QExce ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     val stackFrames = qStackFrames(stackDepth + 2, size = stackSize, filter = stackFilter)
 
-    // CallChain[size=7] = QException.mySrcAndStack <-[Call]- QException.printStackTrace() <-[Propag]- Q ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=7] = QException.mySrcAndStack <-[Call]- QException.printStackTrace() <-[Propag]- Q ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     val mySrcAndStack: String by lazy {
         qLogStackFrames(frames = stackFrames, style = QLogStyle.SRC_AND_STACK, srcCut = srcCut, quiet = true)
-            .qColorTarget(qRe("""\sshould[a-zA-Z]+"""), QShColor.LIGHT_YELLOW)
+            .qColorTarget(qRe("""\sshould[a-zA-Z]+"""), QShColor.LightYellow)
     }
 
-    // CallChain[size=6] = QException.getStackTrace() <-[Propag]- QException.QException() <-[Ref]- QE.th ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=6] = QException.getStackTrace() <-[Propag]- QException.QException() <-[Ref]- QE.th ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     override fun getStackTrace(): Array<StackTraceElement> {
         return stackFrames.map {
             it.toStackTraceElement()
         }.toTypedArray()
     }
 
-    // CallChain[size=7] = QException.qToString() <-[Call]- QException.toString() <-[Propag]- QException ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=7] = QException.qToString() <-[Call]- QException.toString() <-[Propag]- QException ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     fun qToString(): String {
         val msg = message
 
@@ -98,7 +98,7 @@ internal class QException(
         }
     }
 
-    // CallChain[size=6] = QException.toString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=6] = QException.toString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     override fun toString(): String {
         return qToString()
 //         used by @Test
@@ -113,7 +113,7 @@ internal fun Boolean.qaTrue(exceptionType: QE = QE.ShouldBeTrue, msg: Any? = "")
     }
 }
 
-// CallChain[size=12] = T?.qaNotNull() <-[Call]- qSrcFileAtFrame() <-[Call]- qSrcFileLinesAtFrame()  ... [Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=12] = T.qaNotNull() <-[Call]- qSrcFileAtFrame() <-[Call]- qSrcFileLinesAtFrame() < ... -[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun <T : Any> T?.qaNotNull(exceptionType: QE = QE.ShouldNotBeNull, msg: Any? = ""): T {
     if (this != null) {
         return this
@@ -122,7 +122,7 @@ internal fun <T : Any> T?.qaNotNull(exceptionType: QE = QE.ShouldNotBeNull, msg:
     }
 }
 
-// CallChain[size=5] = Int?.qaNotZero() <-[Call]- CharSequence.qMask() <-[Call]- Any?.qToLogString() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=5] = Int.qaNotZero() <-[Call]- CharSequence.qMask() <-[Call]- Any.qToLogString() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun Int?.qaNotZero(exceptionType: QE = QE.ShouldNotBeZero, msg: Any? = ""): Int {
     if (this == null) {
         QE.ShouldNotBeNull.throwIt(stackDepth = 1, msg = msg)

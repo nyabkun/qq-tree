@@ -27,9 +27,9 @@ plugins {
     
 }
 
-group = "com.nyabkun.qol"
+group = "com.github.nyabkun"
 
-version = "v2023-05-28"
+version = "v2023-06-02"
 
 repositories {
     mavenCentral()
@@ -45,37 +45,37 @@ java {
 
 
 sourceSets.main {
-                java.srcDirs("src-split")
+    java.srcDirs("src-split")
 
-                resources.srcDirs("rsc")
-            }
+    resources.srcDirs("rsc")
+}
 
-            sourceSets.test {
-                java.srcDirs("src-test-split")
+sourceSets.test {
+    java.srcDirs("src-test-split")
 
-                resources.srcDirs("rsc-test")
-            }
-            
-            sourceSets.register("example") {
-                                java.srcDirs("src-example")
-            val jarFile = "$buildDir/libs/$qMavenArtifactId-$version.jar"
-            compileClasspath += files(jarFile)
-            runtimeClasspath += files(jarFile)
-                            
-                                resources.srcDirs("rsc")
-                            }
-                            
-                            tasks.getByName("compileExampleKotlin").dependsOn("jar")
-            
-                            val exampleImplementation: Configuration by configurations.getting {
-                                extendsFrom(configurations.implementation.get())
-                            }
-            
-                            val exampleRuntimeOnly: Configuration by configurations.getting {
-                                extendsFrom(configurations.runtimeOnly.get())
-                            }
-            
-            sourceSets.register("single") {
+    resources.srcDirs("rsc-test")
+}
+
+sourceSets.register("example") {
+    java.srcDirs("src-example")
+    val jarFile = "$buildDir/libs/$qMavenArtifactId-$version.jar"
+    compileClasspath += files(jarFile)
+    runtimeClasspath += files(jarFile)
+
+    resources.srcDirs("rsc")
+}
+
+tasks.getByName("compileExampleKotlin").dependsOn("jar")
+
+val exampleImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+
+val exampleRuntimeOnly: Configuration by configurations.getting {
+    extendsFrom(configurations.runtimeOnly.get())
+}
+
+sourceSets.register("single") {
     java.srcDirs("src-single")
 }
 

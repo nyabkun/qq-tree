@@ -18,12 +18,12 @@ import java.nio.file.Path
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=7] = QExProps <-[Call]- Any.qGetExProp() <-[Call]- children <-[Call]- N.depthFirst ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=7] = QExProps <-[Call]- Any.qGetExProp() <-[Call]- N.children <-[Call]- N.depthFir ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 /**
  * Minimal Version of IdentityWeakHashMap.
  */
 private object QExProps {
-    // CallChain[size=8] = QExProps.map <-[Call]- QExProps.get() <-[Call]- Any.qGetExProp() <-[Call]- ch ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=8] = QExProps.map <-[Call]- QExProps.get() <-[Call]- Any.qGetExProp() <-[Call]- N. ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     val map: MutableMap<WeakKey, HashMap<String, Any?>> = HashMap()
 
     // CallChain[size=8] = QExProps.removeGarbageCollectedEntries() <-[Call]- QExProps.get() <-[Call]- A ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
@@ -31,14 +31,14 @@ private object QExProps {
         map.keys.removeIf { it.get() == null }
     }
 
-    // CallChain[size=7] = QExProps.get() <-[Call]- Any.qGetExProp() <-[Call]- children <-[Call]- N.dept ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=7] = QExProps.get() <-[Call]- Any.qGetExProp() <-[Call]- N.children <-[Call]- N.de ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     fun get(key: Any): HashMap<String, Any?>? {
         removeGarbageCollectedEntries()
 
         return map[WeakKey(key)]
     }
 
-    // CallChain[size=7] = QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- children <-[Call]- N.dept ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    // CallChain[size=7] = QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- N.children <-[Call]- N.de ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
     fun put(key: Any, value: HashMap<String, Any?>) {
         removeGarbageCollectedEntries()
 
@@ -61,7 +61,7 @@ private object QExProps {
     }
 }
 
-// CallChain[size=6] = Any.qSetExProp() <-[Call]- children <-[Call]- N.depthFirstRecursive() <-[Call]- N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=6] = Any.qSetExProp() <-[Call]- N.children <-[Call]- N.depthFirstRecursive() <-[Ca ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun Any.qSetExProp(key: String, value: Any?) = synchronized(QExProps) {
     var props = QExProps.get(this)
     if (props == null) {
@@ -71,21 +71,21 @@ internal fun Any.qSetExProp(key: String, value: Any?) = synchronized(QExProps) {
     props[key] = value
 }
 
-// CallChain[size=6] = Any.qGetExProp() <-[Call]- children <-[Call]- N.depthFirstRecursive() <-[Call]- N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=6] = Any.qGetExProp() <-[Call]- N.children <-[Call]- N.depthFirstRecursive() <-[Ca ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun Any.qGetExProp(key: String): Any? = synchronized(QExProps) {
     val props = QExProps.get(this) ?: return null
 
     return props[key]
 }
 
-// CallChain[size=7] = Any.qGetExPropOrDefault() <-[Call]- Any.qGetExPropOrNull() <-[Call]- children ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=7] = Any.qGetExPropOrDefault() <-[Call]- Any.qGetExPropOrNull() <-[Call]- N.childr ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun <T> Any.qGetExPropOrDefault(key: String, default: T): T = synchronized(QExProps) {
     val props = QExProps.get(this) ?: return default
 
     return props.getOrDefault(key, default) as T
 }
 
-// CallChain[size=6] = Any.qGetExPropOrNull() <-[Call]- children <-[Call]- N.depthFirstRecursive() < ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=6] = Any.qGetExPropOrNull() <-[Call]- N.children <-[Call]- N.depthFirstRecursive() ... N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal fun Any.qGetExPropOrNull(key: String): Any? = synchronized(QExProps) {
     return qGetExPropOrDefault(key, null)
 }

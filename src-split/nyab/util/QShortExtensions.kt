@@ -22,6 +22,6 @@ internal operator fun StringBuilder.plusAssign(str: String) {
     this.append(str)
 }
 
-// CallChain[size=8] = path <-[Call]- QMyPath.src_root <-[Call]- qLogStackFrames() <-[Call]- QExcept ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=8] = String.path <-[Call]- QMyPath.src_root <-[Call]- qLogStackFrames() <-[Call]-  ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal val String.path: Path
     get() = Paths.get(this.trim()).toAbsolutePath().normalize()

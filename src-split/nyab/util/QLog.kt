@@ -61,9 +61,9 @@ internal class QLogStyle(
             if (!onlyIf.matches(this))
                 return this
 
-            return """${"SRC START ―――――――――――".qColor(QShColor.CYAN)}
+            return """${"SRC START ―――――――――――".qColor(QShColor.Cyan)}
 ${this.trim()}
-${"SRC END   ―――――――――――".qColor(QShColor.CYAN)}"""
+${"SRC END   ―――――――――――".qColor(QShColor.Cyan)}"""
         }
 
         // CallChain[size=8] = QLogStyle.qLogArrow() <-[Call]- QLogStyle.S <-[Call]- qLogStackFrames() <-[Ca ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
@@ -118,7 +118,7 @@ internal fun qMySrcLinesAtFrame(
         src2
     } catch (e: Exception) {
 //        e.message
-        "${QMyMark.WARN} Couldn't cut src lines : ${qBrackets("FileName", frame.fileName, "LineNo", frame.lineNumber, "SrcRoots", srcRoots)}"
+        "${QMyMark.warn} Couldn't cut src lines : ${qBrackets("FileName", frame.fileName, "LineNo", frame.lineNumber, "SrcRoots", srcRoots)}"
     }
 }
 
@@ -160,12 +160,12 @@ internal fun qLogStackFrames(
 
     val text = style.start + output + style.end
 
-    val finalTxt = if (noColor) text.noColor else text
+    val finalTxt = if (noColor) text.noStyle else text
 
     if (!quiet)
         style.out.print(finalTxt)
 
-    return if (noColor) output.noColor else output
+    return if (noColor) output.noStyle else output
 }
 
 // CallChain[size=8] = qSrcFileLinesAtFrame() <-[Call]- qMySrcLinesAtFrame() <-[Call]- qLogStackFram ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]

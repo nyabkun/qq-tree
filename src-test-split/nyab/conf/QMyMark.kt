@@ -15,13 +15,14 @@ import nyab.util.yellow
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=6] = QMyMark <-[Ref]- QException.QException() <-[Ref]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=6] = QMyMark <-[Ref]- QException.QException() <-[Ref]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+@Suppress("MayBeConstant")
 internal object QMyMark {
-    // CallChain[size=4] = QMyMark.TEST_METHOD <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
-    val TEST_METHOD = "☕".yellow
-    // CallChain[size=6] = QMyMark.WARN <-[Call]- QException.QException() <-[Ref]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
-    val WARN = "⚠".yellow
-    // CallChain[size=3] = QMyMark.TEST_START <-[Call]- qTest() <-[Call]- main()[Root]
-    val TEST_START = "☘".yellow
+    // CallChain[size=4] = QMyMark.test_method <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+    val test_method = "☕".yellow
+    // CallChain[size=6] = QMyMark.warn <-[Call]- QException.QException() <-[Ref]- QE.throwItBrackets() <-[Call]- qBrackets() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+    val warn = "⚠".yellow
+    // CallChain[size=3] = QMyMark.test_start <-[Call]- qTest() <-[Call]- main()[Root]
+    val test_start = "☘".yellow
     
 }

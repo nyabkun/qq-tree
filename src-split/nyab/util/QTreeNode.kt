@@ -225,7 +225,7 @@ enum class QTreeStyle(val plus: String, val vert: String, val end: String, val h
  */
 fun <N : QTreeNodeI<*>> N.tree(
     style: QTreeStyle = QTreeStyle.UNICODE,
-    color: QShColor? = QShColor.LIGHT_YELLOW,
+    color: QShColor? = QShColor.LightYellow,
     visitChecker: HashSet<N> = HashSet(),
 ): String {
     val hyphen = style.hyphen.repeat(3)
@@ -234,6 +234,7 @@ fun <N : QTreeNodeI<*>> N.tree(
 
     this.mark(visitChecker)
 
+    // print root node
     sb += this.toTreeNodeString() + "\n"
 
     for (node in depthFirst().drop(1)) {

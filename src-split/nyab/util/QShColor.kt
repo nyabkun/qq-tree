@@ -15,167 +15,155 @@ import kotlin.math.absoluteValue
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=9] = qBG_JUMP <-[Call]- QShColor.bg <-[Propag]- QShColor.YELLOW <-[Call]- yellow < ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=9] = qBG_JUMP <-[Call]- QShColor.bg <-[Propag]- QShColor.Yellow <-[Call]- String.y ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private const val qBG_JUMP = 10
 
-// CallChain[size=9] = qSTART <-[Call]- QShColor.bg <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[ ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=9] = qSTART <-[Call]- QShColor.bg <-[Propag]- QShColor.Yellow <-[Call]- String.yel ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private const val qSTART = "\u001B["
 
-// CallChain[size=9] = qEND <-[Call]- String.qColorLine() <-[Call]- String.qColor() <-[Call]- yellow ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=10] = qEND <-[Call]- String.qApplyEscapeLine() <-[Call]- String.qApplyEscapeLine() ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 private const val qEND = "${qSTART}0m"
 
-// CallChain[size=10] = qMASK_COLORED <-[Call]- String.qApplyColorNestable() <-[Call]- String.qColor ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-private val qMASK_COLORED by lazy {
-    QMaskBetween(
-        qSTART,
-        qEND,
-        qSTART,
-        escapeChar = '\\',
-        targetNestDepth = 1,
-        maskIncludeStartAndEndSequence = false
-    )
+// CallChain[size=10] = String.qApplyEscapeNestable() <-[Call]- String.qApplyEscapeLine() <-[Call]-  ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+private fun String.qApplyEscapeNestable(start: String): String {
+    val lastEnd = this.endsWith(qEND)
+
+    return if( lastEnd ) {
+            start + this.substring(0, this.length - 1).replace(qEND, qEND + start) + this[this.length - 1]
+        } else {
+            start + this.replace(qEND, qEND + start) + qEND
+        }
 }
 
-// CallChain[size=9] = String.qApplyColorNestable() <-[Call]- String.qColorLine() <-[Call]- String.q ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-private fun String.qApplyColorNestable(colorStart: String): String {
-    val re = "(?s)(\\Q$qEND\\E)(.+?)(\\Q$qSTART\\E|$)".re
-    val replace = "$1$colorStart$2$qEND$3"
-    val re2 = "^(?s)(.*?)(\\Q$qSTART\\E)"
-    val replace2 = "$colorStart$1$qEND$2"
-
-    return this.qMaskAndReplace(
-        qMASK_COLORED,
-        re,
-        replace
-    ).qReplaceFirstIfNonEmptyStringGroup(re2, 1, replace2)
-}
-
-// CallChain[size=7] = String.qColor() <-[Call]- yellow <-[Call]- QException.qToString() <-[Call]- Q ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=7] = String.qColor() <-[Call]- String.yellow <-[Call]- QException.qToString() <-[C ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal fun String.qColor(fg: QShColor? = null, bg: QShColor? = null, nestable: Boolean = this.contains(qSTART)): String {
     return if (this.qIsSingleLine()) {
-        this.qColorLine(fg, bg, nestable)
+        this.qApplyEscapeLine(fg, bg, nestable)
     } else {
         lineSequence().map { line ->
-            line.qColorLine(fg, bg, nestable)
+            line.qApplyEscapeLine(fg, bg, nestable)
         }.joinToString("\n")
     }
 }
 
-// CallChain[size=8] = String.qColorLine() <-[Call]- String.qColor() <-[Call]- yellow <-[Call]- QExc ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-private fun String.qColorLine(
-    fg: QShColor? = null,
-    bg: QShColor? = null,
-    nestable: Boolean = true,
+// CallChain[size=8] = String.qApplyEscapeLine() <-[Call]- String.qColor() <-[Call]- String.yellow < ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+private fun String.qApplyEscapeLine(fg: QShColor?, bg: QShColor?, nestable: Boolean): String {
+    return this.qApplyEscapeLine(
+        listOfNotNull(fg?.fg, bg?.bg).toTypedArray(),
+        nestable
+    )
+}
+
+// CallChain[size=9] = String.qApplyEscapeLine() <-[Call]- String.qApplyEscapeLine() <-[Call]- Strin ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+private fun String.qApplyEscapeLine(
+    startSequences: Array<String>,
+    nestable: Boolean
 ): String {
     val nest = nestable && this.contains(qEND)
 
-    val fgApplied = if (fg != null) {
-        val fgStart = fg.fg
+    var text = this
 
-        if (nest) {
-            this.qApplyColorNestable(fgStart)
+    for (start in startSequences) {
+        text = if (nest) {
+            text.qApplyEscapeNestable(start)
         } else {
-            "$fgStart$this$qEND"
+            "$start$text$qEND"
         }
-    } else {
-        this
     }
 
-    val bgApplied = if (bg != null) {
-        val bgStart = bg.bg
-
-        if (nest) {
-            fgApplied.qApplyColorNestable(bgStart)
-        } else {
-            "$bgStart$fgApplied$qEND"
-        }
-    } else {
-        fgApplied
-    }
-
-    return bgApplied
+    return text
 }
 
-// CallChain[size=12] = noColor <-[Call]- QConsole.print() <-[Propag]- QConsole <-[Call]- QOut.CONSO ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal val String.noColor: String
-    get() {
-        return this.replace("""\Q$qSTART\E\d{1,2}m""".re, "")
-    }
-
-// CallChain[size=7] = QShColor <-[Ref]- yellow <-[Call]- QException.qToString() <-[Call]- QException.toString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=7] = QShColor <-[Ref]- String.yellow <-[Call]- QException.qToString() <-[Call]- QE ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 enum class QShColor(val code: Int) {
-    // CallChain[size=8] = QShColor.BLACK <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExcept ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    BLACK(30),
-    // CallChain[size=8] = QShColor.RED <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExceptio ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    RED(31),
-    // CallChain[size=8] = QShColor.GREEN <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExcept ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    GREEN(32),
-    // CallChain[size=7] = QShColor.YELLOW <-[Call]- yellow <-[Call]- QException.qToString() <-[Call]- Q ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    YELLOW(33),
-    // CallChain[size=8] = QShColor.BLUE <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExcepti ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    BLUE(34),
-    // CallChain[size=8] = QShColor.MAGENTA <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExce ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    MAGENTA(35),
-    // CallChain[size=8] = QShColor.CYAN <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExcepti ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    CYAN(36),
-    // CallChain[size=8] = QShColor.LIGHT_GRAY <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QE ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_GRAY(37),
+    // CallChain[size=8] = QShColor.Black <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]-  ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Black(30),
+    // CallChain[size=8] = QShColor.Red <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]- QE ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Red(31),
+    // CallChain[size=8] = QShColor.Green <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]-  ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Green(32),
+    // CallChain[size=7] = QShColor.Yellow <-[Call]- String.yellow <-[Call]- QException.qToString() <-[C ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Yellow(33),
+    // CallChain[size=8] = QShColor.Blue <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]- Q ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Blue(34),
+    // CallChain[size=8] = QShColor.Purple <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]- ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Purple(35),
+    // CallChain[size=8] = QShColor.Cyan <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]- Q ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    Cyan(36),
+    // CallChain[size=8] = QShColor.LightGray <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Cal ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightGray(37),
 
-    // CallChain[size=8] = QShColor.DARK_GRAY <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QEx ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    DARK_GRAY(90),
-    // CallChain[size=8] = QShColor.LIGHT_RED <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QEx ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_RED(91),
-    // CallChain[size=8] = QShColor.LIGHT_GREEN <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- Q ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_GREEN(92),
-    // CallChain[size=8] = QShColor.LIGHT_YELLOW <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]-  ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_YELLOW(93),
-    // CallChain[size=8] = QShColor.LIGHT_BLUE <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QE ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_BLUE(94),
-    // CallChain[size=8] = QShColor.LIGHT_MAGENTA <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_MAGENTA(95),
-    // CallChain[size=8] = QShColor.LIGHT_CYAN <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QE ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    LIGHT_CYAN(96),
-    // CallChain[size=8] = QShColor.WHITE <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExcept ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    WHITE(97);
+    // CallChain[size=8] = QShColor.DefaultFG <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Cal ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    DefaultFG(39),
+    // CallChain[size=8] = QShColor.DefaultBG <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Cal ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    DefaultBG(49),
 
-    // CallChain[size=8] = QShColor.fg <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QException ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    /** ANSI modifier string to apply the color to the text itself */
+    // CallChain[size=8] = QShColor.DarkGray <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    DarkGray(90),
+    // CallChain[size=8] = QShColor.LightRed <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightRed(91),
+    // CallChain[size=8] = QShColor.LightGreen <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Ca ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightGreen(92),
+    // CallChain[size=8] = QShColor.LightYellow <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[C ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightYellow(93),
+    // CallChain[size=8] = QShColor.LightBlue <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Cal ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightBlue(94),
+    // CallChain[size=8] = QShColor.LightPurple <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[C ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightPurple(95),
+    // CallChain[size=8] = QShColor.LightCyan <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Cal ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    LightCyan(96),
+    // CallChain[size=8] = QShColor.White <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]-  ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    White(97);
+
+    // CallChain[size=8] = QShColor.fg <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]- QEx ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     val fg: String = "$qSTART${code}m"
 
-    // CallChain[size=8] = QShColor.bg <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QException ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    /** ANSI modifier string to apply the color the text's background */
+    // CallChain[size=8] = QShColor.bg <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]- QEx ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
     val bg: String = "$qSTART${code + qBG_JUMP}m"
 
     companion object {
-        // CallChain[size=8] = QShColor.random() <-[Propag]- QShColor.YELLOW <-[Call]- yellow <-[Call]- QExc ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-        fun random(seed: String, colors: Array<QShColor> = arrayOf(YELLOW, GREEN, BLUE, MAGENTA, CYAN)): QShColor {
+        // CallChain[size=8] = QShColor.random() <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+        fun random(seed: String, colors: Array<QShColor> = arrayOf(Yellow, Green, Blue, Purple, Cyan)): QShColor {
             val idx = seed.hashCode().rem(colors.size).absoluteValue
             return colors[idx]
+        }
+
+        // CallChain[size=8] = QShColor.get() <-[Propag]- QShColor.Yellow <-[Call]- String.yellow <-[Call]-  ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+        fun get(ansiEscapeCode: Int): QShColor {
+            return QShColor.values().find {
+                it.code == ansiEscapeCode
+            }!!
         }
     }
 }
 
 // CallChain[size=6] = String.qColorTarget() <-[Call]- QException.mySrcAndStack <-[Call]- QException ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-internal fun String.qColorTarget(ptn: Regex, color: QShColor = QShColor.LIGHT_YELLOW): String {
-    return ptn.replace(this, "$0".qColor(color))
+internal fun String.qColorTarget(ptn: Regex, fg: QShColor? = null, bg: QShColor? = null): String {
+    return ptn.replace(this, "$0".qColor(fg, bg))
 }
 
-// CallChain[size=6] = yellow <-[Call]- QException.qToString() <-[Call]- QException.toString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=6] = String.yellow <-[Call]- QException.qToString() <-[Call]- QException.toString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal val String?.yellow: String
-    get() = this?.qColor(QShColor.YELLOW) ?: "null".qColor(QShColor.YELLOW)
+    get() = this?.qColor(QShColor.Yellow) ?: "null".qColor(QShColor.Yellow)
 
-// CallChain[size=15] = cyan <-[Call]- QMaskResult.toString() <-[Propag]- QMaskResult <-[Ref]- QMask ... oString() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=8] = String.cyan <-[Call]- QLogStyle <-[Ref]- QLogStyle.SRC_AND_STACK <-[Call]- QE ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal val String?.cyan: String
-    get() = this?.qColor(QShColor.CYAN) ?: "null".qColor(QShColor.CYAN)
+    get() = this?.qColor(QShColor.Cyan) ?: "null".qColor(QShColor.Cyan)
 
-// CallChain[size=3] = light_gray <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=3] = String.light_gray <-[Call]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal val String?.light_gray: String
-    get() = this?.qColor(QShColor.LIGHT_GRAY) ?: "null".qColor(QShColor.LIGHT_GRAY)
+    get() = this?.qColor(QShColor.LightGray) ?: "null".qColor(QShColor.LightGray)
 
-// CallChain[size=9] = light_green <-[Call]- QLogStyle.qLogArrow() <-[Call]- QLogStyle.S <-[Call]- q ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=9] = String.light_green <-[Call]- QLogStyle.qLogArrow() <-[Call]- QLogStyle.S <-[C ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal val String?.light_green: String
-    get() = this?.qColor(QShColor.LIGHT_GREEN) ?: "null".qColor(QShColor.LIGHT_GREEN)
+    get() = this?.qColor(QShColor.LightGreen) ?: "null".qColor(QShColor.LightGreen)
 
-// CallChain[size=11] = light_cyan <-[Call]- qARROW <-[Call]- qArrow() <-[Call]- QLogStyle.qLogArrow ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+// CallChain[size=11] = String.light_cyan <-[Call]- qARROW <-[Call]- qArrow() <-[Call]- QLogStyle.qL ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
 internal val String?.light_cyan: String
-    get() = this?.qColor(QShColor.LIGHT_CYAN) ?: "null".qColor(QShColor.LIGHT_CYAN)
+    get() = this?.qColor(QShColor.LightCyan) ?: "null".qColor(QShColor.LightCyan)
+
+// CallChain[size=12] = String.noStyle <-[Call]- QConsole.print() <-[Propag]- QConsole <-[Call]- QOu ... ckTrace() <-[Propag]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+internal val String.noStyle: String
+    get() {
+        return this.replace("""\Q$qSTART\E\d{1,2}m""".re, "")
+    }

@@ -18,34 +18,34 @@ import java.nio.file.Path
 // qq-tree is a self-contained single-file library created by nyabkun.
 // This is a split-file version of the library, this file is not self-contained.
 
-// CallChain[size=3] = QExProps <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
+// CallChain[size=3] = QExProps <-[Call]- Any.qSetExProp() <-[Call]- N.parent[Root]
 /**
  * Minimal Version of IdentityWeakHashMap.
  */
 private object QExProps {
-    // CallChain[size=4] = QExProps.map <-[Call]- QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
+    // CallChain[size=4] = QExProps.map <-[Call]- QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- N.parent[Root]
     val map: MutableMap<WeakKey, HashMap<String, Any?>> = HashMap()
 
-    // CallChain[size=4] = QExProps.removeGarbageCollectedEntries() <-[Call]- QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
+    // CallChain[size=4] = QExProps.removeGarbageCollectedEntries() <-[Call]- QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- N.parent[Root]
     fun removeGarbageCollectedEntries() {
         map.keys.removeIf { it.get() == null }
     }
 
-    // CallChain[size=3] = QExProps.get() <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
+    // CallChain[size=3] = QExProps.get() <-[Call]- Any.qSetExProp() <-[Call]- N.parent[Root]
     fun get(key: Any): HashMap<String, Any?>? {
         removeGarbageCollectedEntries()
 
         return map[WeakKey(key)]
     }
 
-    // CallChain[size=3] = QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
+    // CallChain[size=3] = QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- N.parent[Root]
     fun put(key: Any, value: HashMap<String, Any?>) {
         removeGarbageCollectedEntries()
 
         map[WeakKey(key)] = value
     }
 
-    // CallChain[size=4] = QExProps.WeakKey <-[Call]- QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- parent[Root]
+    // CallChain[size=4] = QExProps.WeakKey <-[Call]- QExProps.put() <-[Call]- Any.qSetExProp() <-[Call]- N.parent[Root]
     class WeakKey(key: Any) : WeakReference<Any>(key) {
         val hash = System.identityHashCode(key)
 
@@ -61,7 +61,7 @@ private object QExProps {
     }
 }
 
-// CallChain[size=2] = Any.qSetExProp() <-[Call]- parent[Root]
+// CallChain[size=2] = Any.qSetExProp() <-[Call]- N.parent[Root]
 internal fun Any.qSetExProp(key: String, value: Any?) = synchronized(QExProps) {
     var props = QExProps.get(this)
     if (props == null) {
@@ -71,21 +71,21 @@ internal fun Any.qSetExProp(key: String, value: Any?) = synchronized(QExProps) {
     props[key] = value
 }
 
-// CallChain[size=2] = Any.qGetExProp() <-[Call]- children[Root]
+// CallChain[size=2] = Any.qGetExProp() <-[Call]- N.children[Root]
 internal fun Any.qGetExProp(key: String): Any? = synchronized(QExProps) {
     val props = QExProps.get(this) ?: return null
 
     return props[key]
 }
 
-// CallChain[size=3] = Any.qGetExPropOrDefault() <-[Call]- Any.qGetExPropOrNull() <-[Call]- parent[Root]
+// CallChain[size=3] = Any.qGetExPropOrDefault() <-[Call]- Any.qGetExPropOrNull() <-[Call]- N.parent[Root]
 internal fun <T> Any.qGetExPropOrDefault(key: String, default: T): T = synchronized(QExProps) {
     val props = QExProps.get(this) ?: return default
 
     return props.getOrDefault(key, default) as T
 }
 
-// CallChain[size=2] = Any.qGetExPropOrNull() <-[Call]- parent[Root]
+// CallChain[size=2] = Any.qGetExPropOrNull() <-[Call]- N.parent[Root]
 internal fun Any.qGetExPropOrNull(key: String): Any? = synchronized(QExProps) {
     return qGetExPropOrDefault(key, null)
 }

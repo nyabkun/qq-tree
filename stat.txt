@@ -1,0 +1,71 @@
+Version: v2023-06-02
+
+# Public API [main]
+N.fillTree() - ExtensionFunction
+N.root() - ExtensionFunction
+N.isRoot() - ExtensionFunction
+N.hasCycle() - ExtensionFunction
+N.depth() - ExtensionFunction
+N.tree() - ExtensionFunction
+N.descendants() - ExtensionFunction
+N.add() - ExtensionFunction
+N.add() - ExtensionFunction
+N.add() - ExtensionFunction
+N.newNode() - ExtensionFunction
+N.ancestors() - ExtensionFunction
+N.descendantsList() - ExtensionFunction
+N.ancestorsList() - ExtensionFunction
+N.isLeaf - ExtensionProperty
+N.parent - ExtensionProperty
+N.children - ExtensionProperty
+QTreeNode - Class
+QLazyTreeNode - Interface
+QTreeNodeI - Interface
+QTreeStyle - EnumClass
+QSearchAlgo - EnumClass
+QShColor (Chained) - EnumClass
+
+# single src file number of lines [main]
+3140
+# split src file number of files [main]
+23
+# number of marked nodes [main]
+458
+# number of all nodes [main]
+1217
+# number of root of chain nodes [main]
+39
+# single src file number of lines [test]
+4581
+# split src file number of files [test]
+32
+# number of marked nodes [test]
+650
+# number of all nodes [test]
+1674
+# number of root of chain nodes [test]
+9
+
+# chain node hit count [main]
+                 N.depthFirst() [KtNamedFunction] <Top Level> : 404
+                   QE.throwIt() [KtNamedFunction] <Top Level> : 400
+QException.QException() [KtPrimaryConstructor] <Second Level> : 272
+QException.printStackTrace() [KtNamedFunction] <Second Level> : 207
+         QException.mySrcAndStack [KtProperty] <Second Level> : 206
+              qLogStackFrames() [KtNamedFunction] <Top Level> : 163
+             Any.qToLogString() [KtNamedFunction] <Top Level> : 124
+           qMySrcLinesAtFrame() [KtNamedFunction] <Top Level> :  98
+         qSrcFileLinesAtFrame() [KtNamedFunction] <Top Level> :  85
+               QMask.KOTLIN_STRING [KtProperty] <Third Level> :  64
+
+# chain node hit count [test]
+QTreeNodeTest.testDepthFirstSearch() [KtNamedFunction] <Second Level> : 460
+                         Any.shouldBe() [KtNamedFunction] <Top Level> : 424
+                            qBrackets() [KtNamedFunction] <Top Level> : 238
+                   QE.throwItBrackets() [KtNamedFunction] <Top Level> : 214
+        QException.QException() [KtPrimaryConstructor] <Second Level> : 212
+        QException.printStackTrace() [KtNamedFunction] <Second Level> : 198
+                 QException.mySrcAndStack [KtProperty] <Second Level> : 197
+                                 main() [KtNamedFunction] <Top Level> : 171
+                                qTest() [KtNamedFunction] <Top Level> : 170
+                      qLogStackFrames() [KtNamedFunction] <Top Level> : 156

@@ -34,7 +34,7 @@ import nyab.util.light_gray
 import nyab.util.light_green
 import nyab.util.light_red
 import nyab.util.light_yellow
-import nyab.util.noColor
+import nyab.util.noStyle
 import nyab.util.qBrackets
 import nyab.util.qCallerFileName
 import nyab.util.qColor
@@ -91,7 +91,7 @@ internal data class QTestResultElement(val method: Method, val cause: Throwable?
         get() = cause == null
 }
 
-// CallChain[size=5] = allTestedMethods <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
+// CallChain[size=5] = List<QTestResultElement>.allTestedMethods <-[Call]- QTestResult.printIt() <-[Call]- qTestMethods() <-[Call]- qTest() <-[Call]- main()[Root]
 internal val List<QTestResultElement>.allTestedMethods: String
     get() =
         "\n[${"Tested".light_blue}]\n" +
@@ -151,7 +151,7 @@ internal class QTestResult(val elements: List<QTestResultElement>, val time: Lon
                         """(.*($ta|${ta}Kt).*?)\("""
                     }.re
 
-                    val stackStr = stackColoringRegex.replace(cause.mySrcAndStack, "$1".qColor(QShColor.BLUE) + "(")
+                    val stackStr = stackColoringRegex.replace(cause.mySrcAndStack, "$1".qColor(QShColor.Blue) + "(")
 
                     cause.message + "\n\n" + stackStr
                 } else {
@@ -187,7 +187,7 @@ private fun qTestMethods(
     val timeItResult = qTimeIt(quiet = true) {
         for (method in methodsToTest) {
             // "⭐"
-            out.println(qSeparatorWithLabel("${QMyMark.TEST_METHOD} " + method.qName(true)))
+            out.println(qSeparatorWithLabel("${QMyMark.test_method} " + method.qName(true)))
 
             method.qTrySetAccessible()
 
@@ -303,7 +303,7 @@ internal fun qTest(
 
     qLogStackFrames(
         // "🚀"
-        msg = "${QMyMark.TEST_START} Test Start ${QMyMark.TEST_START}\n$targets".light_blue,
+        msg = "${QMyMark.test_start} Test Start ${QMyMark.test_start}\n$targets".light_blue,
         style = QLogStyle.MSG_AND_STACK,
         frames = listOf(
             qStackFrameEntryMethod { frame ->
@@ -333,32 +333,32 @@ internal fun qTest(
     }
 }
 
-// CallChain[size=3] = qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=3] = qFailMsg() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun qFailMsg(msg: String = "it is null"): String {
     val cMsg = "[$msg]".colorIt
-    return "${QMyMark.WARN} $cMsg"
+    return "${QMyMark.warn} $cMsg"
 }
 
-// CallChain[size=3] = qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=3] = qFailMsg() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun qFailMsg(actual: Any?, msg: String = "is not equals to", expected: Any?): String {
     val cMsg = "[$msg]".colorIt
     val actualStr = actual.qToLogString() + " " + "(actual)".light_green
     val expectedStr = expected.qToLogString() + " " + "(expected)".blue
-    return "${QMyMark.WARN} ${actualStr.qWithNewLineSurround(onlyIf = QOnlyIfStr.Always)}$cMsg${
+    return "${QMyMark.warn} ${actualStr.qWithNewLineSurround(onlyIf = QOnlyIfStr.Always)}$cMsg${
         expectedStr.qWithNewLinePrefix(onlyIf = QOnlyIfStr.Always)
     }"
 }
 
-// CallChain[size=4] = colorIt <-[Call]- qFailMsg() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=4] = String.colorIt <-[Call]- qFailMsg() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private val String.colorIt: String
     get() = this.light_yellow
 
-// CallChain[size=3] = qThrowIt() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=3] = qThrowIt() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private fun qThrowIt(msg: String, exception: QE) {
     throw QException(exception, msg, null, stackDepth = 2, srcCut = QSrcCut.MULTILINE_INFIX_NOCUT)
 }
 
-// CallChain[size=2] = Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=2] = Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal infix fun Any?.shouldBe(expected: Any?) {
     if (!qOkToTest()) return
 
@@ -377,7 +377,7 @@ internal infix fun Any?.shouldBe(expected: Any?) {
     val thisStr = this.qToLogString()
     val expectedStr = expected.qToLogString()
 
-    if (thisStr.trim().noColor != expectedStr.trim().noColor) {
+    if (thisStr.trim().noStyle != expectedStr.trim().noStyle) {
         val msg = qFailMsg(thisStr, "is not equals to", expectedStr)
 
         val diffIdx =
@@ -418,7 +418,7 @@ internal infix fun Any?.shouldBe(expected: Any?) {
     }
 }
 
-// CallChain[size=3] = qOkToTest() <-[Call]- Any?.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=3] = qOkToTest() <-[Call]- Any.shouldBe() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 private inline fun qOkToTest(): Boolean {
     return QMyTest.forceTestMode || qIsTesting || qIsDebugging
 }

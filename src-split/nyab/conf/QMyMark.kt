@@ -16,8 +16,9 @@ import nyab.util.yellow
 // This is a split-file version of the library, this file is not self-contained.
 
 // CallChain[size=4] = QMyMark <-[Ref]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+@Suppress("MayBeConstant")
 internal object QMyMark {
-    // CallChain[size=4] = QMyMark.WARN <-[Call]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
-    val WARN = "⚠".yellow
+    // CallChain[size=4] = QMyMark.warn <-[Call]- QException.QException() <-[Ref]- QE.throwIt() <-[Call]- N.depthFirst()[Root]
+    val warn = "⚠".yellow
     
 }

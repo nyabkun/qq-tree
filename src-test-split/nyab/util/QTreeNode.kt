@@ -66,7 +66,7 @@ internal fun <N : QTreeNodeI<*>> N.hasCycle(): Boolean {
     return false
 }
 
-// CallChain[size=4] = parent <-[Call]- N.add() <-[Call]- N.add() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=4] = N.parent <-[Call]- N.add() <-[Call]- N.add() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 internal var <N : QTreeNodeI<*>> N.parent: N?
     get() =
         this.qGetExPropOrNull("#parent") as N?
@@ -84,7 +84,7 @@ internal var <N : QTreeNodeI<*>> N.parent: N?
         this.qSetExProp("#parent", value)
     }
 
-// CallChain[size=5] = children <-[Call]- N.depthFirstRecursive() <-[Call]- N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
+// CallChain[size=5] = N.children <-[Call]- N.depthFirstRecursive() <-[Call]- N.descendants() <-[Call]- N.descendantsList() <-[Call]- QTreeNodeTest.testDepthFirstSearch()[Root]
 /**
  * Obtain the child nodes of this node.
  */
@@ -136,7 +136,7 @@ internal enum class QTreeStyle(val plus: String, val vert: String, val end: Stri
  */
 internal fun <N : QTreeNodeI<*>> N.tree(
     style: QTreeStyle = QTreeStyle.UNICODE,
-    color: QShColor? = QShColor.LIGHT_YELLOW,
+    color: QShColor? = QShColor.LightYellow,
     visitChecker: HashSet<N> = HashSet(),
 ): String {
     val hyphen = style.hyphen.repeat(3)
@@ -145,6 +145,7 @@ internal fun <N : QTreeNodeI<*>> N.tree(
 
     this.mark(visitChecker)
 
+    // print root node
     sb += this.toTreeNodeString() + "\n"
 
     for (node in depthFirst().drop(1)) {
