@@ -13,13 +13,15 @@
 
 ### output
 <p align="center">
-    <img src="img/01-num-tree.png" width="200" alt="01-num-tree.png">
+    <img src="img/01-intTree.png" width="195" alt="01-num-tree.png">
+    <img src="img/02-intTree.png" width="192" alt="01-num-tree.png">
+    <img src="img/04-textTree.png" width="248" alt="03-file-tree.png">
 </p>
 <p align="center">
-    <img src="img/02-tree-walk.png" width="459" alt="02-tree-walk.png">
+    <img src="img/03-intTree.png" width="445" alt="02-tree-walk.png">
 </p>
 <p align="center">
-    <img src="img/03-file-tree.png" width="375" alt="03-file-tree.png">
+    <img src="img/05-fileTree.png" width="375" alt="03-file-tree.png">
 </p>
 
 ### code example
