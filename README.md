@@ -95,7 +95,7 @@ fun fileTree() {
         }
 
         override fun toTreeNodeString(): String {
-            return if (value.isDirectory()) "📁" + value.name else value.name
+            return if (value.isDirectory()) "📂 " + value.name else value.name
         }
     }
 
